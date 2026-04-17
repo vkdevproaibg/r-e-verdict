@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PropertyMap } from "@/components/PropertyMap";
 import { Sliders, Play, X, Heart, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,9 +25,10 @@ export default function BuyerMap() {
   const { goal: appGoal } = useApp();
 
   // Default goal from onboarding once
-  useMemo(() => {
+  useEffect(() => {
     if (!goal && appGoal) setGoal(appGoal as Goal);
-  }, [appGoal, goal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appGoal]);
 
   const { data: properties = [] } = useProperties({ verdict, goal });
   const { data: saved = [] } = useSaved();
