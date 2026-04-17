@@ -1,11 +1,11 @@
-import { Map, Heart, Users, MessageSquare } from "lucide-react";
+import { Sparkles, Map, Heart, Bell } from "lucide-react";
 import { TabShell, TabDef } from "@/components/TabShell";
 
 const tabs: TabDef[] = [
-  { to: "/buyer", end: true, Icon: Map, ru: "Карта", en: "Map", primary: true },
+  { to: "/buyer", end: true, Icon: Sparkles, ru: "Анализ", en: "Analyze", primary: true },
+  { to: "/buyer/map", Icon: Map, ru: "Карта", en: "Map" },
   { to: "/buyer/saved", Icon: Heart, ru: "Избранное", en: "Saved" },
-  { to: "/buyer/agents", Icon: Users, ru: "Агенты", en: "Agents" },
-  { to: "/buyer/inbox", Icon: MessageSquare, ru: "Чаты", en: "Inbox" },
+  { to: "/buyer/alerts", Icon: Bell, ru: "Алерты", en: "Alerts" },
 ];
 
 export default function BuyerLayout() {
