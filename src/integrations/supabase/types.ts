@@ -14,7 +14,312 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          body: string | null
+          created_at: string
+          device_id: string
+          id: string
+          kind: string
+          property_id: string | null
+          read: boolean
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          device_id: string
+          id?: string
+          kind: string
+          property_id?: string | null
+          read?: boolean
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          device_id?: string
+          id?: string
+          kind?: string
+          property_id?: string | null
+          read?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analyses: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          device_id: string
+          id: string
+          input_kind: string
+          input_payload: Json | null
+          next_steps: Json | null
+          property_id: string | null
+          raw: Json | null
+          reasons: Json | null
+          red_flags: Json | null
+          score: number | null
+          verdict: Database["public"]["Enums"]["verdict_t"] | null
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          device_id: string
+          id?: string
+          input_kind: string
+          input_payload?: Json | null
+          next_steps?: Json | null
+          property_id?: string | null
+          raw?: Json | null
+          reasons?: Json | null
+          red_flags?: Json | null
+          score?: number | null
+          verdict?: Database["public"]["Enums"]["verdict_t"] | null
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          device_id?: string
+          id?: string
+          input_kind?: string
+          input_payload?: Json | null
+          next_steps?: Json | null
+          property_id?: string | null
+          raw?: Json | null
+          reasons?: Json | null
+          red_flags?: Json | null
+          score?: number | null
+          verdict?: Database["public"]["Enums"]["verdict_t"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analyses_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignments: {
+        Row: {
+          client_id: string
+          created_at: string
+          device_id: string
+          id: string
+          notes: string | null
+          property_id: string
+          shown_at: string | null
+          status: Database["public"]["Enums"]["assignment_status"]
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          device_id: string
+          id?: string
+          notes?: string | null
+          property_id: string
+          shown_at?: string | null
+          status?: Database["public"]["Enums"]["assignment_status"]
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          device_id?: string
+          id?: string
+          notes?: string | null
+          property_id?: string
+          shown_at?: string | null
+          status?: Database["public"]["Enums"]["assignment_status"]
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          areas: string[] | null
+          budget_max: number | null
+          budget_min: number | null
+          created_at: string
+          device_id: string
+          email: string | null
+          goal: Database["public"]["Enums"]["goal_t"] | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          areas?: string[] | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          device_id: string
+          email?: string | null
+          goal?: Database["public"]["Enums"]["goal_t"] | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          areas?: string[] | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          device_id?: string
+          email?: string | null
+          goal?: Database["public"]["Enums"]["goal_t"] | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string | null
+          area_sqm: number | null
+          bathrooms: number | null
+          bedrooms: number | null
+          city: string | null
+          cover_url: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          goal: Database["public"]["Enums"]["goal_t"] | null
+          id: string
+          is_demo: boolean
+          lat: number
+          lng: number
+          monthly_cost: number | null
+          owner_device_id: string | null
+          price: number
+          score: number | null
+          title: string
+          updated_at: string
+          verdict: Database["public"]["Enums"]["verdict_t"] | null
+          yield_pct: number | null
+        }
+        Insert: {
+          address?: string | null
+          area_sqm?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          goal?: Database["public"]["Enums"]["goal_t"] | null
+          id?: string
+          is_demo?: boolean
+          lat: number
+          lng: number
+          monthly_cost?: number | null
+          owner_device_id?: string | null
+          price: number
+          score?: number | null
+          title: string
+          updated_at?: string
+          verdict?: Database["public"]["Enums"]["verdict_t"] | null
+          yield_pct?: number | null
+        }
+        Update: {
+          address?: string | null
+          area_sqm?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          goal?: Database["public"]["Enums"]["goal_t"] | null
+          id?: string
+          is_demo?: boolean
+          lat?: number
+          lng?: number
+          monthly_cost?: number | null
+          owner_device_id?: string | null
+          price?: number
+          score?: number | null
+          title?: string
+          updated_at?: string
+          verdict?: Database["public"]["Enums"]["verdict_t"] | null
+          yield_pct?: number | null
+        }
+        Relationships: []
+      }
+      saved_properties: {
+        Row: {
+          created_at: string
+          device_id: string
+          id: string
+          notes: string | null
+          property_id: string
+          tags: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          id?: string
+          notes?: string | null
+          property_id: string
+          tags?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          id?: string
+          notes?: string | null
+          property_id?: string
+          tags?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +328,17 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role: "agent" | "buyer"
+      assignment_status:
+        | "new"
+        | "sent"
+        | "viewed"
+        | "interested"
+        | "rejected"
+        | "offer"
+        | "closed"
+      goal_t: "live" | "invest" | "rent" | "business"
+      verdict_t: "green" | "yellow" | "red"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +465,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["agent", "buyer"],
+      assignment_status: [
+        "new",
+        "sent",
+        "viewed",
+        "interested",
+        "rejected",
+        "offer",
+        "closed",
+      ],
+      goal_t: ["live", "invest", "rent", "business"],
+      verdict_t: ["green", "yellow", "red"],
+    },
   },
 } as const
