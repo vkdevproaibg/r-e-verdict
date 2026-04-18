@@ -56,10 +56,10 @@ export default function AnalyzeResult({ mode }: { mode: "agent" | "buyer" }) {
       verdict: result.verdict,
       score: result.score,
       confidence: result.confidence,
-      reasons: result.reasons as unknown as object,
-      red_flags: result.red_flags as unknown as object,
-      next_steps: result.next_steps as unknown as object,
-      raw: result as unknown as object,
+      reasons: result.reasons as unknown as never,
+      red_flags: result.red_flags as unknown as never,
+      next_steps: result.next_steps as unknown as never,
+      raw: result as unknown as never,
     });
     toast.success("Анализ сохранён · Saved");
   };
