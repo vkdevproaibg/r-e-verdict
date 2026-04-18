@@ -1,0 +1,141 @@
+{
+  "brand": {
+    "name": "Propa AI",
+    "tagline": "Decision layer for real estate"
+  },
+  "nav": {
+    "analyze": "Analyze",
+    "map": "Map",
+    "history": "History",
+    "saved": "Saved",
+    "settings": "Settings",
+    "clients": "Clients",
+    "library": "Library",
+    "alerts": "Alerts",
+    "signIn": "Sign in",
+    "signUp": "Get started",
+    "guest": "Continue as guest",
+    "signOut": "Sign out"
+  },
+  "role": {
+    "buyer": "Buyer",
+    "agent": "Agent",
+    "switch": "Switch role"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "landing": {
+    "eyebrow": "AI Verdict Engine · 2026",
+    "headline": "Buy, negotiate, or walk away — in 30 seconds.",
+    "sub": "Propa is the decision layer over Zillow, Redfin and public GIS. Verdict, evidence and next steps — not another listing wall.",
+    "ctaPrimary": "Analyze a property",
+    "ctaSecondary": "See a sample report",
+    "trustedBy": "Built on trusted public + market data",
+    "pillars": {
+      "title": "Three layers, one decision",
+      "vision": {
+        "title": "Vision",
+        "body": "Snap a photo of a façade or interior. We read condition, finishes, and red flags before you do."
+      },
+      "context": {
+        "title": "Context",
+        "body": "Comparables, transit, schools, flood, crime — synthesised into a single confidence score."
+      },
+      "evidence": {
+        "title": "Evidence",
+        "body": "Every claim is backed by a source. Drill into reasons, risks and the next concrete step."
+      }
+    },
+    "sample": {
+      "eyebrow": "Sample client report",
+      "title": "Editorial-grade output you can hand to anyone.",
+      "body": "Verdict, score, key metric and the three reasons that matter — designed to be read, shared and acted on."
+    },
+    "trust": {
+      "title": "Data we synthesise",
+      "items": [
+        "MLS · Zillow · Redfin",
+        "Public GIS · Parcel · Zoning",
+        "Census · Schools · Transit",
+        "Climate · Flood · Crime"
+      ]
+    },
+    "ctaFooter": {
+      "title": "Stop scrolling listings. Start making decisions.",
+      "body": "Free to try. No card required.",
+      "cta": "Open Propa"
+    }
+  },
+  "auth": {
+    "signInTitle": "Welcome back",
+    "signInSub": "Continue your decisions where you left off.",
+    "signUpTitle": "Create your account",
+    "signUpSub": "Save analyses, get alerts, and assign properties to clients.",
+    "email": "Email",
+    "password": "Password",
+    "name": "Full name",
+    "google": "Continue with Google",
+    "or": "or",
+    "guestCta": "Continue as guest",
+    "guestHint": "You can still get a result. Saving and alerts require an account.",
+    "haveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "comingSoon": "Sign-in is a UI preview — full auth ships next."
+  },
+  "analyze": {
+    "title": "How would you like to analyze?",
+    "sub": "Pick any input. We turn it into a decision in seconds.",
+    "methods": {
+      "location": { "title": "Use my location", "desc": "Analyze right where you are" },
+      "photo": { "title": "Upload photos", "desc": "Façade, interior, documents" },
+      "url": { "title": "Paste a listing URL", "desc": "Zillow, Redfin, Bayut…" },
+      "manual": { "title": "Manual entry", "desc": "Address, price, key facts" },
+      "document": { "title": "Upload documents", "desc": "Deep dive on contracts & disclosures" }
+    },
+    "start": "Start analysis"
+  },
+  "result": {
+    "verdict": {
+      "green": "Strong buy",
+      "yellow": "Negotiate",
+      "red": "Walk away"
+    },
+    "confidence": "Confidence",
+    "score": "Decision score",
+    "keyMetric": "Key metric",
+    "priceVsMarket": "Price vs market",
+    "liquidity": "Liquidity",
+    "reasons": "Why this verdict",
+    "redFlags": "Red flags",
+    "redFlagsHint": "How to verify",
+    "nextSteps": "Next steps",
+    "media": "Property media",
+    "actions": {
+      "save": "Save",
+      "compare": "Compare",
+      "share": "Share",
+      "export": "Export PDF",
+      "talk": "Talk to a pro",
+      "assign": "Assign to client"
+    },
+    "agentTools": "Agent sales tools",
+    "presentedBy": "Presented by"
+  },
+  "history": {
+    "title": "History",
+    "sub": "Every analysis you've ever run.",
+    "empty": "Your analyses will appear here.",
+    "filter": { "all": "All", "green": "Strong buy", "yellow": "Negotiate", "red": "Walk away" }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Appearance",
+    "privacy": "Data & privacy",
+    "integrations": "Integrations",
+    "account": "Account"
+  }
+}
