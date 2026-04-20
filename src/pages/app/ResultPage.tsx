@@ -38,6 +38,9 @@ interface AIResult {
   input_kind?: string;
   query?: string;
   error?: string;
+  lat?: number;
+  lng?: number;
+  geo_address?: string;
 }
 
 const verdictTokens: Record<Verdict, { bg: string; text: string; ring: string; dot: string }> = {
