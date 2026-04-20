@@ -47,7 +47,7 @@ export default function BuyerMap() {
   const isSaved = !!saved.find((s) => s.property_id === selId);
 
   return (
-    <div className="relative h-[calc(100vh-3.5rem-5rem)]">
+    <div className="relative h-[calc(100vh-3.5rem-4rem)] lg:h-[calc(100vh-3.5rem)]">
       <PropertyMap pins={pins} onPinClick={setSelId} />
 
       {/* Top bar */}
