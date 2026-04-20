@@ -7,15 +7,12 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
-const goalOptions: { value: Goal; label: string }[] = [
-  { value: "live", label: "Жить" },
-  { value: "invest", label: "Инвест" },
-  { value: "rent", label: "Аренда" },
-  { value: "business", label: "Коммерция" },
-];
+const goalValues: Goal[] = ["live", "invest", "rent", "business"];
 
 export default function ClientsList() {
+  const { t, i18n } = useTranslation();
   const { data: clients = [] } = useClients();
   const create = useCreateClient();
   const [open, setOpen] = useState(false);
@@ -39,18 +36,20 @@ export default function ClientsList() {
     setOpen(false);
   };
 
+  const dateLocale = i18n.language === "ru" ? "ru-RU" : "en-US";
+
   return (
     <div className="animate-fade-in">
       <ScreenHeader
-        ru="Клиенты"
-        en="Clients"
+        ru={t("agent.clients.title")}
+        en={t("nav.clients", { lng: "en" })}
         action={
           <Button
             size="sm"
             onClick={() => setOpen(true)}
             className="rounded-full bg-foreground text-background hover:bg-foreground/90 h-9"
           >
-            <Plus className="h-4 w-4 mr-1" /> Новый
+            <Plus className="h-4 w-4 mr-1" /> {t("agent.clients.newBtn")}
           </Button>
         }
       />
@@ -61,7 +60,7 @@ export default function ClientsList() {
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Поиск · Search"
+            placeholder={t("agent.clients.searchPlaceholder")}
             className="pl-9 h-11 rounded-xl bg-card"
           />
         </div>
@@ -70,16 +69,16 @@ export default function ClientsList() {
       {filtered.length === 0 ? (
         <EmptyState
           Icon={UserPlus}
-          ru="Создайте первого клиента"
-          en="Create your first client"
-          hint="Добавьте имя и цель — потом назначайте объекты и отслеживайте статусы."
+          ru={t("agent.clients.emptyTitle")}
+          en={t("agent.clients.emptyTitle", { lng: "en" })}
+          hint={t("agent.clients.emptyHint")}
         />
       ) : (
         <div className="px-5 space-y-2">
           {filtered.map((c) => (
             <Link
               key={c.id}
-              to={`/agent/clients/${c.id}`}
+              to={`/app/clients/${c.id}`}
               className="block rounded-2xl border border-border bg-card p-4 shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all"
             >
               <div className="flex items-center gap-3">
@@ -90,17 +89,19 @@ export default function ClientsList() {
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="font-medium truncate">{c.name}</div>
                     <div className="text-xs text-muted-foreground shrink-0">
-                      {new Date(c.created_at).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}
+                      {new Date(c.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short" })}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     {c.goal && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-secondary text-muted-foreground">
-                        {goalOptions.find((g) => g.value === c.goal)?.label}
+                        {t(`goals.${c.goal}`)}
                       </span>
                     )}
                     {c.budget_max && (
-                      <span className="text-xs text-muted-foreground">до {Number(c.budget_max).toLocaleString("en-US")}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {t("agent.clients.budgetUpTo", { value: Number(c.budget_max).toLocaleString("en-US") })}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -113,27 +114,29 @@ export default function ClientsList() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="rounded-t-3xl">
           <SheetHeader>
-            <SheetTitle>Новый клиент · New client</SheetTitle>
+            <SheetTitle>{t("agent.clients.form.title")}</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-3">
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Имя · Name" className="h-12 rounded-xl" autoFocus />
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Телефон · Phone (опц.)" className="h-12 rounded-xl" />
-            <Input value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="Макс. бюджет · Max budget" type="number" className="h-12 rounded-xl" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("agent.clients.form.name")} className="h-12 rounded-xl" autoFocus />
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("agent.clients.form.phone")} className="h-12 rounded-xl" />
+            <Input value={budget} onChange={(e) => setBudget(e.target.value)} placeholder={t("agent.clients.form.budget")} type="number" className="h-12 rounded-xl" />
             <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Цель · Goal</div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                {t("agent.clients.form.goal")}
+              </div>
               <div className="flex flex-wrap gap-2">
-                {goalOptions.map((g) => (
+                {goalValues.map((g) => (
                   <button
-                    key={g.value}
-                    onClick={() => setGoal(g.value === goal ? null : g.value)}
+                    key={g}
+                    onClick={() => setGoal(g === goal ? null : g)}
                     className={cn(
                       "rounded-full px-3.5 py-2 text-xs font-medium border transition-colors",
-                      goal === g.value
+                      goal === g
                         ? "bg-foreground text-background border-foreground"
                         : "bg-card border-border hover:border-accent/40"
                     )}
                   >
-                    {g.label}
+                    {t(`goals.${g}`)}
                   </button>
                 ))}
               </div>
@@ -143,7 +146,7 @@ export default function ClientsList() {
               disabled={!name.trim() || create.isPending}
               className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 rounded-xl"
             >
-              Создать
+              {t("agent.clients.form.submit")}
             </Button>
           </div>
         </SheetContent>

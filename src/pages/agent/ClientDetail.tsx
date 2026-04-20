@@ -4,18 +4,20 @@ import { ArrowLeft, Phone, MessageCircle, MapPin } from "lucide-react";
 import { useClient, useAssignments, useUpdateAssignmentStatus, type AssignmentStatus } from "@/hooks/useCloudData";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
-const statuses: { value: AssignmentStatus; ru: string; color: string }[] = [
-  { value: "new", ru: "Новый", color: "bg-secondary text-muted-foreground" },
-  { value: "sent", ru: "Отправлен", color: "bg-accent/15 text-accent" },
-  { value: "viewed", ru: "Просмотрен", color: "bg-verdict-yellow/15 text-verdict-yellow" },
-  { value: "interested", ru: "Интерес", color: "bg-verdict-green/15 text-verdict-green" },
-  { value: "rejected", ru: "Отказ", color: "bg-verdict-red/15 text-verdict-red" },
-  { value: "offer", ru: "Оффер", color: "bg-accent/20 text-accent" },
-  { value: "closed", ru: "Закрыт", color: "bg-foreground/15 text-foreground" },
+const statusOrder: { value: AssignmentStatus; color: string }[] = [
+  { value: "new", color: "bg-secondary text-muted-foreground" },
+  { value: "sent", color: "bg-accent/15 text-accent" },
+  { value: "viewed", color: "bg-verdict-yellow/15 text-verdict-yellow" },
+  { value: "interested", color: "bg-verdict-green/15 text-verdict-green" },
+  { value: "rejected", color: "bg-verdict-red/15 text-verdict-red" },
+  { value: "offer", color: "bg-accent/20 text-accent" },
+  { value: "closed", color: "bg-foreground/15 text-foreground" },
 ];
 
 export default function ClientDetail() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: client, isLoading } = useClient(id);
@@ -26,7 +28,7 @@ export default function ClientDetail() {
     return (
       <div className="min-h-screen">
         <TopBar subtitle="Agent mode" />
-        <div className="px-5 pt-4 text-sm text-muted-foreground">Загрузка…</div>
+        <div className="px-5 pt-4 text-sm text-muted-foreground">{t("agent.client.loading")}</div>
       </div>
     );
   }
@@ -37,10 +39,10 @@ export default function ClientDetail() {
 
       <div className="px-5 pt-2">
         <button
-          onClick={() => navigate("/agent/clients")}
+          onClick={() => navigate("/app/clients")}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" /> К клиентам
+          <ArrowLeft className="h-4 w-4" /> {t("agent.client.back")}
         </button>
       </div>
 
@@ -64,12 +66,12 @@ export default function ClientDetail() {
             <div className="mt-4 flex flex-wrap gap-2">
               {client.goal && (
                 <span className="text-[11px] px-2.5 py-1 rounded-full bg-secondary text-foreground font-medium">
-                  {client.goal}
+                  {t(`goals.${client.goal}`)}
                 </span>
               )}
               {client.budget_max && (
                 <span className="text-[11px] px-2.5 py-1 rounded-full bg-secondary text-foreground font-medium">
-                  до {Number(client.budget_max).toLocaleString("en-US")}
+                  {t("agent.client.budgetUpTo", { value: Number(client.budget_max).toLocaleString("en-US") })}
                 </span>
               )}
             </div>
@@ -79,14 +81,14 @@ export default function ClientDetail() {
             {client.phone && (
               <Button asChild variant="secondary" className="h-11 rounded-xl">
                 <a href={`tel:${client.phone}`}>
-                  <Phone className="h-4 w-4 mr-2" /> Позвонить
+                  <Phone className="h-4 w-4 mr-2" /> {t("agent.client.call")}
                 </a>
               </Button>
             )}
             {client.phone && (
               <Button asChild className="h-11 rounded-xl bg-foreground text-background hover:bg-foreground/90">
                 <a href={`https://wa.me/${client.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp
+                  <MessageCircle className="h-4 w-4 mr-2" /> {t("agent.client.whatsapp")}
                 </a>
               </Button>
             )}
@@ -97,19 +99,19 @@ export default function ClientDetail() {
       {/* Assignments */}
       <div className="px-5 mt-6">
         <div className="flex items-baseline gap-2 mb-3">
-          <h2 className="text-lg font-semibold tracking-tight">Объекты клиента</h2>
+          <h2 className="text-lg font-semibold tracking-tight">{t("agent.client.assignmentsTitle")}</h2>
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Assignments</span>
         </div>
         {assignments.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
-            Пока нет назначенных объектов.<br />
-            <span className="text-xs">Откройте «Анализ» → «Назначить клиенту».</span>
+            {t("agent.client.noAssignments")}<br />
+            <span className="text-xs">{t("agent.client.noAssignmentsHint")}</span>
           </div>
         ) : (
           <div className="space-y-2">
             {assignments.map((a) => {
               const p = a.property;
-              const meta = statuses.find((s) => s.value === a.status)!;
+              const meta = statusOrder.find((s) => s.value === a.status)!;
               return (
                 <div key={a.id} className="rounded-2xl border border-border bg-card p-4 shadow-soft">
                   <div className="flex items-start gap-3">
@@ -133,11 +135,11 @@ export default function ClientDetail() {
                       )}
                     </div>
                     <span className={cn("text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-medium", meta.color)}>
-                      {meta.ru}
+                      {t(`agent.client.statuses.${a.status}`)}
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    {statuses.map((s) => (
+                    {statusOrder.map((s) => (
                       <button
                         key={s.value}
                         onClick={() => updateStatus.mutate({ id: a.id, status: s.value })}
@@ -148,7 +150,7 @@ export default function ClientDetail() {
                             : "bg-card border-border hover:border-accent/40 text-muted-foreground"
                         )}
                       >
-                        {s.ru}
+                        {t(`agent.client.statuses.${s.value}`)}
                       </button>
                     ))}
                   </div>

@@ -7,8 +7,10 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
 
 export default function Saved() {
+  const { t } = useTranslation();
   const { data: saved = [], isLoading } = useSaved();
   const toggleSave = useToggleSave();
   const updateNotes = useUpdateSavedNotes();
@@ -41,14 +43,14 @@ export default function Saved() {
 
   return (
     <div className="animate-fade-in">
-      <ScreenHeader ru="Избранное" en="Saved" />
+      <ScreenHeader ru={t("buyer.saved.title")} en={t("nav.saved", { lng: "en" })} />
 
       {isLoading ? null : saved.length === 0 ? (
         <EmptyState
           Icon={Heart}
-          ru="Пока пусто"
-          en="Nothing saved yet"
-          hint="Сохраняйте объекты с карты — будут здесь с заметками и алертами."
+          ru={t("buyer.saved.empty")}
+          en={t("buyer.saved.empty", { lng: "en" })}
+          hint={t("buyer.saved.emptyHint")}
         />
       ) : (
         <div className="px-5 space-y-2">
@@ -83,9 +85,9 @@ export default function Saved() {
                     )}
                     {s.tags && s.tags.length > 0 && (
                       <div className="mt-1.5 flex gap-1 flex-wrap">
-                        {s.tags.map((t) => (
-                          <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
-                            #{t}
+                        {s.tags.map((tag) => (
+                          <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                            #{tag}
                           </span>
                         ))}
                       </div>
@@ -95,7 +97,7 @@ export default function Saved() {
                     <button
                       onClick={() => openEdit(s.id)}
                       className="h-8 w-8 grid place-items-center rounded-lg hover:bg-secondary"
-                      aria-label="Edit notes"
+                      aria-label={t("buyer.saved.edit")}
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
@@ -117,29 +119,33 @@ export default function Saved() {
       <Sheet open={!!editId} onOpenChange={(o) => !o && setEditId(null)}>
         <SheetContent side="bottom" className="rounded-t-3xl">
           <SheetHeader>
-            <SheetTitle>Заметки и теги · Notes & tags</SheetTitle>
+            <SheetTitle>{t("buyer.saved.edit")}</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-3">
             <div>
-              <label className="text-xs uppercase tracking-wider text-muted-foreground">Заметка</label>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground">
+                {t("buyer.saved.noteLabel")}
+              </label>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Что важно про этот объект…"
+                placeholder={t("buyer.saved.notePlaceholder")}
                 className="mt-1 rounded-xl"
               />
             </div>
             <div>
-              <label className="text-xs uppercase tracking-wider text-muted-foreground">Теги (через запятую)</label>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground">
+                {t("buyer.saved.tagsLabel")}
+              </label>
               <Input
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="инвест, до 1М, новостройка"
+                placeholder={t("buyer.saved.tagsPlaceholder")}
                 className="mt-1 rounded-xl h-11"
               />
             </div>
             <Button onClick={save} className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 rounded-xl">
-              Сохранить
+              {t("common.save")}
             </Button>
           </div>
         </SheetContent>
