@@ -27,6 +27,32 @@
     "dark": "Тёмная",
     "system": "Системная"
   },
+  "common": {
+    "all": "Все",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "create": "Создать",
+    "loading": "Загрузка…",
+    "search": "Поиск",
+    "new": "Новый",
+    "back": "Назад",
+    "close": "Закрыть",
+    "show": "Показать"
+  },
+  "verdicts": {
+    "green": "Покупать",
+    "yellow": "Торговаться",
+    "red": "Пройти мимо",
+    "shortYellow": "Торг",
+    "shortRed": "Мимо",
+    "pending": "В обработке"
+  },
+  "goals": {
+    "live": "Жить",
+    "invest": "Инвест",
+    "rent": "Аренда",
+    "business": "Коммерция"
+  },
   "landing": {
     "eyebrow": "AI Verdict Engine · 2026",
     "headline": "Купить, торговаться или пройти мимо — за 30 секунд.",
@@ -137,5 +163,89 @@
     "privacy": "Данные и приватность",
     "integrations": "Интеграции",
     "account": "Аккаунт"
+  },
+  "buyer": {
+    "map": {
+      "nearby": "объектов",
+      "nearbySub": "Объекты рядом",
+      "filtersTitle": "Фильтры",
+      "goal": "Цель",
+      "verdict": "Вердикт",
+      "showCount": "Показать ({{count}})",
+      "stats": {
+        "price": "Цена",
+        "score": "Скор",
+        "yield": "Доходность"
+      },
+      "video": "Видео",
+      "contact": "Связаться"
+    },
+    "saved": {
+      "title": "Избранное",
+      "empty": "Пока пусто",
+      "emptyHint": "Сохраняйте объекты с карты — будут здесь с заметками и алертами.",
+      "edit": "Заметки и теги",
+      "noteLabel": "Заметка",
+      "notePlaceholder": "Что важно про этот объект…",
+      "tagsLabel": "Теги (через запятую)",
+      "tagsPlaceholder": "инвест, до 1М, новостройка"
+    },
+    "alerts": {
+      "title": "Алерты",
+      "empty": "Алертов пока нет",
+      "emptyHint": "Сохранённые объекты автоматически попадут в лист наблюдения. Уведомления о снижении цен и изменении вердикта появятся здесь.",
+      "watchlist": "Лист наблюдения",
+      "watchlistSub": "Deal Watchlist · {{count}} объектов",
+      "kinds": {
+        "price_drop": "Снижение цены",
+        "new_listing": "Новый объект",
+        "verdict_change": "Вердикт изменился",
+        "weekly": "Недельный обзор"
+      }
+    }
+  },
+  "agent": {
+    "clients": {
+      "title": "Клиенты",
+      "newBtn": "Новый",
+      "searchPlaceholder": "Поиск",
+      "emptyTitle": "Создайте первого клиента",
+      "emptyHint": "Добавьте имя и цель — потом назначайте объекты и отслеживайте статусы.",
+      "form": {
+        "title": "Новый клиент",
+        "name": "Имя",
+        "phone": "Телефон (опц.)",
+        "budget": "Макс. бюджет",
+        "goal": "Цель",
+        "submit": "Создать"
+      },
+      "budgetUpTo": "до {{value}}"
+    },
+    "client": {
+      "back": "К клиентам",
+      "loading": "Загрузка…",
+      "budgetUpTo": "до {{value}}",
+      "call": "Позвонить",
+      "whatsapp": "WhatsApp",
+      "assignmentsTitle": "Объекты клиента",
+      "noAssignments": "Пока нет назначенных объектов.",
+      "noAssignmentsHint": "Откройте «Анализ» → «Назначить клиенту».",
+      "statuses": {
+        "new": "Новый",
+        "sent": "Отправлен",
+        "viewed": "Просмотрен",
+        "interested": "Интерес",
+        "rejected": "Отказ",
+        "offer": "Оффер",
+        "closed": "Закрыт"
+      }
+    },
+    "library": {
+      "title": "Архив",
+      "empty": "Архив пуст",
+      "emptyHint": "Сохранённые анализы и портфолио объектов будут здесь.",
+      "defaultHeadline": "Анализ",
+      "metaLine": "{{kind}} · скор {{score}} · уверенность {{confidence}}%"
+    }
   }
 }

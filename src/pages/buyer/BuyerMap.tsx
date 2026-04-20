@@ -6,18 +6,10 @@ import { useProperties, useToggleSave, useSaved, type Verdict, type Goal } from 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useApp } from "@/state/AppContext";
 import { cn } from "@/lib/utils";
-
-const verdictLabel: Record<Verdict, { ru: string; en: string }> = {
-  green: { ru: "Покупать", en: "Strong buy" },
-  yellow: { ru: "Торговаться", en: "Negotiate" },
-  red: { ru: "Пройти мимо", en: "Avoid" },
-};
-
-const goalLabel: Record<Goal, string> = {
-  live: "Жить", invest: "Инвест", rent: "Аренда", business: "Коммерция",
-};
+import { useTranslation } from "react-i18next";
 
 export default function BuyerMap() {
+  const { t } = useTranslation();
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -63,16 +55,18 @@ export default function BuyerMap() {
         <div className="glass-card rounded-2xl px-4 py-2.5 inline-flex items-center gap-2 pointer-events-auto">
           <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
           <div>
-            <div className="text-sm font-semibold leading-tight">{pins.length} объектов</div>
+            <div className="text-sm font-semibold leading-tight">
+              {pins.length} {t("buyer.map.nearby")}
+            </div>
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Nearby properties
+              {t("buyer.map.nearbySub")}
             </div>
           </div>
         </div>
         <button
           onClick={() => setFiltersOpen(true)}
           className="glass-card h-11 w-11 rounded-2xl grid place-items-center pointer-events-auto hover:border-accent/40 transition-colors"
-          aria-label="Filters"
+          aria-label={t("buyer.map.filtersTitle")}
         >
           <Sliders className="h-4 w-4" />
         </button>
@@ -82,14 +76,14 @@ export default function BuyerMap() {
       {(verdict || goal) && (
         <div className="absolute top-20 left-4 right-4 z-[500] flex gap-2 pointer-events-none">
           {goal && (
-            <Chip onClear={() => setGoal(null)}>{goalLabel[goal]}</Chip>
+            <Chip onClear={() => setGoal(null)}>{t(`goals.${goal}`)}</Chip>
           )}
           {verdict && (
             <Chip onClear={() => setVerdict(null)}>
               <span className={cn("h-1.5 w-1.5 rounded-full inline-block mr-1.5",
                 verdict === "green" ? "bg-verdict-green" :
                 verdict === "yellow" ? "bg-verdict-yellow" : "bg-verdict-red")} />
-              {verdictLabel[verdict].ru}
+              {t(`verdicts.${verdict}`)}
             </Chip>
           )}
         </div>
@@ -110,7 +104,7 @@ export default function BuyerMap() {
                       selected.verdict === "green" ? "bg-verdict-green" :
                       selected.verdict === "yellow" ? "bg-verdict-yellow" : "bg-verdict-red")} />
                     <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
-                      {selected.verdict ? verdictLabel[selected.verdict as Verdict].en : "Pending"}
+                      {selected.verdict ? t(`verdicts.${selected.verdict}`) : t("verdicts.pending")}
                     </span>
                   </div>
                   <h3 className="text-xl font-semibold mt-1.5 tracking-tight truncate">{selected.title}</h3>
@@ -121,18 +115,17 @@ export default function BuyerMap() {
                 <button
                   onClick={() => setSelId(null)}
                   className="h-8 w-8 grid place-items-center rounded-full hover:bg-secondary transition-colors shrink-0"
-                  aria-label="Close"
+                  aria-label={t("common.close")}
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
               <div className="mt-4 grid grid-cols-3 gap-2">
-                <Stat label="Цена" en="Price" value={fmt(selected.price, selected.currency)} />
-                <Stat label="Скор" en="Score" value={String(selected.score ?? "—")} highlight />
+                <Stat label={t("buyer.map.stats.price")} value={fmt(selected.price, selected.currency)} />
+                <Stat label={t("buyer.map.stats.score")} value={String(selected.score ?? "—")} highlight />
                 <Stat
-                  label="Доходность"
-                  en="Yield"
+                  label={t("buyer.map.stats.yield")}
                   value={selected.yield_pct ? `${selected.yield_pct}%` : "—"}
                 />
               </div>
@@ -148,17 +141,17 @@ export default function BuyerMap() {
                   onClick={() =>
                     toggleSave.mutate({ propertyId: selected.id, save: !isSaved })
                   }
-                  aria-label={isSaved ? "Remove from saved" : "Save"}
+                  aria-label={isSaved ? "Remove from saved" : t("common.save")}
                 >
                   <Heart className={cn("h-4 w-4", isSaved && "fill-current")} />
                 </Button>
                 <Button variant="secondary" className="flex-1 h-11 rounded-xl">
                   <Play className="h-4 w-4 mr-1.5 fill-current" />
-                  Видео
+                  {t("buyer.map.video")}
                 </Button>
                 <Button className="flex-1 h-11 rounded-xl bg-foreground text-background hover:bg-foreground/90">
                   <Phone className="h-4 w-4 mr-1.5" />
-                  Связаться
+                  {t("buyer.map.contact")}
                 </Button>
               </div>
             </div>
@@ -170,28 +163,28 @@ export default function BuyerMap() {
       <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
         <SheetContent side="bottom" className="rounded-t-3xl">
           <SheetHeader>
-            <SheetTitle>Фильтры · Filters</SheetTitle>
+            <SheetTitle>{t("buyer.map.filtersTitle")}</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-5">
             <FilterGroup
-              ru="Цель" en="Goal"
+              label={t("buyer.map.goal")}
               options={[
-                { value: null, label: "Все" },
-                { value: "live", label: "Жить" },
-                { value: "invest", label: "Инвест" },
-                { value: "rent", label: "Аренда" },
-                { value: "business", label: "Коммерция" },
+                { value: null, label: t("common.all") },
+                { value: "live", label: t("goals.live") },
+                { value: "invest", label: t("goals.invest") },
+                { value: "rent", label: t("goals.rent") },
+                { value: "business", label: t("goals.business") },
               ]}
               value={goal}
               onChange={(v) => setGoal(v as Goal | null)}
             />
             <FilterGroup
-              ru="Вердикт" en="Verdict"
+              label={t("buyer.map.verdict")}
               options={[
-                { value: null, label: "Все" },
-                { value: "green", label: "Покупать", dot: "bg-verdict-green" },
-                { value: "yellow", label: "Торг", dot: "bg-verdict-yellow" },
-                { value: "red", label: "Мимо", dot: "bg-verdict-red" },
+                { value: null, label: t("common.all") },
+                { value: "green", label: t("verdicts.green"), dot: "bg-verdict-green" },
+                { value: "yellow", label: t("verdicts.shortYellow"), dot: "bg-verdict-yellow" },
+                { value: "red", label: t("verdicts.shortRed"), dot: "bg-verdict-red" },
               ]}
               value={verdict}
               onChange={(v) => setVerdict(v as Verdict | null)}
@@ -200,7 +193,7 @@ export default function BuyerMap() {
               className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 rounded-xl"
               onClick={() => setFiltersOpen(false)}
             >
-              Показать ({pins.length})
+              {t("buyer.map.showCount", { count: pins.length })}
             </Button>
           </div>
         </SheetContent>
@@ -220,31 +213,27 @@ function Chip({ children, onClear }: { children: React.ReactNode; onClear: () =>
   );
 }
 
-function Stat({ label, en, value, highlight }: { label: string; en: string; value: string; highlight?: boolean }) {
+function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className={cn("rounded-xl border border-border p-2.5",
       highlight ? "bg-accent/5 border-accent/30" : "bg-secondary/40")}>
       <div className={cn("text-base font-semibold leading-none truncate", highlight && "text-accent")}>{value}</div>
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">{label}</div>
-      <div className="text-[9px] uppercase tracking-wider text-muted-foreground/70">{en}</div>
     </div>
   );
 }
 
 function FilterGroup<T extends string | null>({
-  ru, en, options, value, onChange,
+  label, options, value, onChange,
 }: {
-  ru: string; en: string;
+  label: string;
   options: { value: T; label: string; dot?: string }[];
   value: T;
   onChange: (v: T) => void;
 }) {
   return (
     <div>
-      <div className="flex items-baseline gap-2 mb-2">
-        <div className="text-sm font-semibold">{ru}</div>
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{en}</div>
-      </div>
+      <div className="text-sm font-semibold mb-2">{label}</div>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <button
