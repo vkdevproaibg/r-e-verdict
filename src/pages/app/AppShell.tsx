@@ -8,13 +8,11 @@ import {
   Users,
   FolderOpen,
   Bell,
-  Menu,
   Check,
   LogOut,
   User,
   History,
 } from "lucide-react";
-import { useState } from "react";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRole, type AppRole } from "@/state/RoleContext";
@@ -27,7 +25,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 type NavItem = {
   to: string;
@@ -40,14 +37,13 @@ export default function AppShell() {
   const { t } = useTranslation();
   const { role, setRole } = useRole();
   const location = useLocation();
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const buyerNav: NavItem[] = [
     { to: "/app/analyze", label: t("nav.analyze"), Icon: Sparkles, end: true },
     { to: "/app/map", label: t("nav.map"), Icon: Map },
     { to: "/app/saved", label: t("nav.saved"), Icon: Heart },
-    { to: "/app/history", label: t("nav.history"), Icon: History },
     { to: "/app/alerts", label: t("nav.alerts"), Icon: Bell },
+    { to: "/app/history", label: t("nav.history"), Icon: History },
     { to: "/app/settings", label: t("nav.settings"), Icon: Settings },
   ];
 
@@ -61,6 +57,9 @@ export default function AppShell() {
   ];
 
   const items = role === "agent" ? agentNav : buyerNav;
+  // Mobile bottom bar shows max 5 items; "More" is settings.
+  const mobileItems = items.slice(0, 4);
+  const moreItem = items.find((i) => i.to === "/app/settings");
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -79,16 +78,9 @@ export default function AppShell() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-xl">
+        <header className="sticky top-0 z-[1000] border-b border-border bg-background/85 backdrop-blur-xl">
           <div className="flex h-14 items-center justify-between px-4 lg:px-6">
             <div className="flex items-center gap-2 min-w-0">
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="lg:hidden h-9 w-9 grid place-items-center rounded-full hover:bg-secondary"
-                aria-label="Menu"
-              >
-                <Menu className="h-4 w-4" />
-              </button>
               <Link to="/" className="lg:hidden flex items-center gap-2">
                 <div className="h-7 w-7 rounded-lg bg-gradient-charcoal grid place-items-center">
                   <span className="text-[10px] font-bold tracking-widest text-background">P</span>
@@ -105,26 +97,43 @@ export default function AppShell() {
           </div>
         </header>
 
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 pb-16 lg:pb-0">
           <Outlet />
         </main>
       </div>
 
-      {/* Mobile drawer */}
-      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <SheetContent side="left" className="p-0 w-72">
-          <SidebarBrand />
-          <nav className="px-3 py-4 space-y-1" onClick={() => setDrawerOpen(false)}>
-            {items.map((it) => (
-              <SidebarLink key={it.to} {...it} />
-            ))}
-          </nav>
-          <div className="p-3 border-t border-border">
-            <RoleBadge role={role} />
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Mobile bottom tab bar */}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-[1100] border-t border-border bg-background/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+        <div className="grid grid-cols-5 h-16">
+          {mobileItems.map((it) => (
+            <BottomTab key={it.to} {...it} />
+          ))}
+          {moreItem && <BottomTab {...moreItem} />}
+        </div>
+      </nav>
     </div>
+  );
+}
+
+function BottomTab({ to, label, Icon, end }: NavItem) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        cn(
+          "flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors",
+          isActive ? "text-foreground" : "text-muted-foreground active:text-foreground"
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <Icon className={cn("h-5 w-5", isActive && "text-accent")} />
+          <span className="leading-none">{label}</span>
+        </>
+      )}
+    </NavLink>
   );
 }
 
