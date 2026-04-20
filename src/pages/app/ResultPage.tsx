@@ -149,6 +149,51 @@ export default function ResultPage() {
           </div>
         </motion.div>
 
+        {/* Location + 3D view */}
+        {typeof result.lat === "number" && typeof result.lng === "number" && (
+          <Section className="lg:col-span-12" title={lang === "ru" ? "Локация" : "Location"}>
+            {result.geo_address && (
+              <div className="mb-3 text-sm text-muted-foreground inline-flex items-start gap-1.5">
+                <span className="mt-0.5">📍</span>
+                <span className="leading-snug">{result.geo_address}</span>
+              </div>
+            )}
+            <div className="grid md:grid-cols-2 gap-3">
+              <div className="rounded-2xl overflow-hidden border border-border bg-secondary aspect-[16/10]">
+                <iframe
+                  title="Map"
+                  src={`https://www.google.com/maps?q=${result.lat},${result.lng}&z=17&output=embed`}
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+              <div className="rounded-2xl overflow-hidden border border-border bg-secondary aspect-[16/10] relative">
+                <iframe
+                  title="3D Satellite view"
+                  src={`https://www.google.com/maps?q=${result.lat},${result.lng}&z=18&t=k&output=embed`}
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+                <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-background/90 backdrop-blur text-[10px] uppercase tracking-widest font-semibold">
+                  3D · Satellite
+                </div>
+              </div>
+            </div>
+            <div className="mt-2 text-right">
+              <a
+                href={`https://www.google.com/maps/@?api=1&map_action=map&center=${result.lat},${result.lng}&zoom=18&basemap=satellite`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+              >
+                {lang === "ru" ? "Открыть в Google Maps →" : "Open in Google Maps →"}
+              </a>
+            </div>
+          </Section>
+        )}
+
         {/* Reasons */}
         {result.reasons?.length > 0 && (
           <Section className="lg:col-span-7" title={t("result.reasons")}>
