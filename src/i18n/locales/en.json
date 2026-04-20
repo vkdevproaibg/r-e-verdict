@@ -27,6 +27,32 @@
     "dark": "Dark",
     "system": "System"
   },
+  "common": {
+    "all": "All",
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "loading": "Loading…",
+    "search": "Search",
+    "new": "New",
+    "back": "Back",
+    "close": "Close",
+    "show": "Show"
+  },
+  "verdicts": {
+    "green": "Strong buy",
+    "yellow": "Negotiate",
+    "red": "Walk away",
+    "shortYellow": "Negotiate",
+    "shortRed": "Avoid",
+    "pending": "Pending"
+  },
+  "goals": {
+    "live": "Live",
+    "invest": "Invest",
+    "rent": "Rent",
+    "business": "Business"
+  },
   "landing": {
     "eyebrow": "AI Verdict Engine · 2026",
     "headline": "Buy, negotiate, or walk away — in 30 seconds.",
@@ -137,5 +163,89 @@
     "privacy": "Data & privacy",
     "integrations": "Integrations",
     "account": "Account"
+  },
+  "buyer": {
+    "map": {
+      "nearby": "properties",
+      "nearbySub": "Nearby properties",
+      "filtersTitle": "Filters",
+      "goal": "Goal",
+      "verdict": "Verdict",
+      "showCount": "Show ({{count}})",
+      "stats": {
+        "price": "Price",
+        "score": "Score",
+        "yield": "Yield"
+      },
+      "video": "Video",
+      "contact": "Contact"
+    },
+    "saved": {
+      "title": "Saved",
+      "empty": "Nothing saved yet",
+      "emptyHint": "Save properties from the map — they'll appear here with notes and alerts.",
+      "edit": "Notes & tags",
+      "noteLabel": "Note",
+      "notePlaceholder": "What matters about this property…",
+      "tagsLabel": "Tags (comma-separated)",
+      "tagsPlaceholder": "invest, under 1M, new build"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "empty": "No alerts yet",
+      "emptyHint": "Saved properties join your watchlist automatically. Price drops and verdict changes will appear here.",
+      "watchlist": "Watchlist",
+      "watchlistSub": "Deal Watchlist · {{count}} properties",
+      "kinds": {
+        "price_drop": "Price drop",
+        "new_listing": "New listing",
+        "verdict_change": "Verdict change",
+        "weekly": "Weekly digest"
+      }
+    }
+  },
+  "agent": {
+    "clients": {
+      "title": "Clients",
+      "newBtn": "New",
+      "searchPlaceholder": "Search",
+      "emptyTitle": "Create your first client",
+      "emptyHint": "Add a name and goal — then assign properties and track statuses.",
+      "form": {
+        "title": "New client",
+        "name": "Name",
+        "phone": "Phone (optional)",
+        "budget": "Max budget",
+        "goal": "Goal",
+        "submit": "Create"
+      },
+      "budgetUpTo": "up to {{value}}"
+    },
+    "client": {
+      "back": "Back to clients",
+      "loading": "Loading…",
+      "budgetUpTo": "up to {{value}}",
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "assignmentsTitle": "Client properties",
+      "noAssignments": "No properties assigned yet.",
+      "noAssignmentsHint": "Open Analyze → Assign to client.",
+      "statuses": {
+        "new": "New",
+        "sent": "Sent",
+        "viewed": "Viewed",
+        "interested": "Interested",
+        "rejected": "Rejected",
+        "offer": "Offer",
+        "closed": "Closed"
+      }
+    },
+    "library": {
+      "title": "Library",
+      "empty": "No saved analyses",
+      "emptyHint": "Saved analyses and property portfolio will appear here.",
+      "defaultHeadline": "Analysis",
+      "metaLine": "{{kind}} · score {{score}} · confidence {{confidence}}%"
+    }
   }
 }
