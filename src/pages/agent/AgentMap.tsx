@@ -22,7 +22,7 @@ export default function AgentMap() {
   );
 
   return (
-    <div className="relative h-[calc(100vh-3.5rem-5rem)]">
+    <div className="relative h-[calc(100vh-3.5rem-4rem)] lg:h-[calc(100vh-3.5rem)]">
       <PropertyMap pins={pins} />
       <div className="absolute top-4 left-4 right-4 z-[500] flex items-center justify-between gap-2 pointer-events-none">
         <div className="glass-card rounded-2xl px-4 py-2.5 inline-flex items-center gap-2 pointer-events-auto">
