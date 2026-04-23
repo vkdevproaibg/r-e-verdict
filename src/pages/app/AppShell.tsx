@@ -1,17 +1,15 @@
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  Home,
   Sparkles,
-  Map,
-  Heart,
+  FolderOpen,
+  GitCompare,
   Settings,
   Users,
-  FolderOpen,
-  Bell,
   Check,
   LogOut,
   User,
-  History,
 } from "lucide-react";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -31,6 +29,7 @@ type NavItem = {
   label: string;
   Icon: typeof Sparkles;
   end?: boolean;
+  primary?: boolean;
 };
 
 export default function AppShell() {
@@ -38,28 +37,24 @@ export default function AppShell() {
   const { role, setRole } = useRole();
   const location = useLocation();
 
+  // Bottom bar (5 tabs) — fixed by contract.
   const buyerNav: NavItem[] = [
-    { to: "/app/analyze", label: t("nav.analyze"), Icon: Sparkles, end: true },
-    { to: "/app/map", label: t("nav.map"), Icon: Map },
-    { to: "/app/saved", label: t("nav.saved"), Icon: Heart },
-    { to: "/app/alerts", label: t("nav.alerts"), Icon: Bell },
-    { to: "/app/history", label: t("nav.history"), Icon: History },
+    { to: "/app", label: t("nav.home"), Icon: Home, end: true },
+    { to: "/app/analyze", label: t("nav.newAnalysis"), Icon: Sparkles, primary: true },
+    { to: "/app/library", label: t("nav.library"), Icon: FolderOpen },
+    { to: "/app/compare", label: t("nav.compare"), Icon: GitCompare },
     { to: "/app/settings", label: t("nav.settings"), Icon: Settings },
   ];
 
   const agentNav: NavItem[] = [
-    { to: "/app/analyze", label: t("nav.analyze"), Icon: Sparkles, end: true },
-    { to: "/app/map", label: t("nav.map"), Icon: Map },
+    { to: "/app", label: t("nav.home"), Icon: Home, end: true },
+    { to: "/app/analyze", label: t("nav.newAnalysis"), Icon: Sparkles, primary: true },
     { to: "/app/clients", label: t("nav.clients"), Icon: Users },
     { to: "/app/library", label: t("nav.library"), Icon: FolderOpen },
-    { to: "/app/history", label: t("nav.history"), Icon: History },
     { to: "/app/settings", label: t("nav.settings"), Icon: Settings },
   ];
 
   const items = role === "agent" ? agentNav : buyerNav;
-  // Mobile bottom bar shows max 5 items; "More" is settings.
-  const mobileItems = items.slice(0, 4);
-  const moreItem = items.find((i) => i.to === "/app/settings");
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -97,25 +92,24 @@ export default function AppShell() {
           </div>
         </header>
 
-        <main className="flex-1 min-w-0 pb-16 lg:pb-0">
+        <main className="flex-1 min-w-0 pb-20 lg:pb-0">
           <Outlet />
         </main>
       </div>
 
-      {/* Mobile bottom tab bar */}
+      {/* Mobile bottom tab bar — exactly 5 items */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-[1100] border-t border-border bg-background/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
         <div className="grid grid-cols-5 h-16">
-          {mobileItems.map((it) => (
+          {items.map((it) => (
             <BottomTab key={it.to} {...it} />
           ))}
-          {moreItem && <BottomTab {...moreItem} />}
         </div>
       </nav>
     </div>
   );
 }
 
-function BottomTab({ to, label, Icon, end }: NavItem) {
+function BottomTab({ to, label, Icon, end, primary }: NavItem) {
   return (
     <NavLink
       to={to}
@@ -127,12 +121,26 @@ function BottomTab({ to, label, Icon, end }: NavItem) {
         )
       }
     >
-      {({ isActive }) => (
-        <>
-          <Icon className={cn("h-5 w-5", isActive && "text-accent")} />
-          <span className="leading-none">{label}</span>
-        </>
-      )}
+      {({ isActive }) =>
+        primary ? (
+          <>
+            <span
+              className={cn(
+                "h-10 w-10 rounded-2xl grid place-items-center -mt-2 shadow-bronze",
+                "bg-gradient-bronze text-accent-foreground"
+              )}
+            >
+              <Icon className="h-5 w-5" />
+            </span>
+            <span className="leading-none mt-0.5">{label}</span>
+          </>
+        ) : (
+          <>
+            <Icon className={cn("h-5 w-5", isActive && "text-accent")} />
+            <span className="leading-none">{label}</span>
+          </>
+        )
+      }
     </NavLink>
   );
 }
@@ -154,7 +162,7 @@ function SidebarBrand() {
   );
 }
 
-function SidebarLink({ to, label, Icon, end }: NavItem) {
+function SidebarLink({ to, label, Icon, end, primary }: NavItem) {
   return (
     <NavLink
       to={to}
@@ -163,7 +171,11 @@ function SidebarLink({ to, label, Icon, end }: NavItem) {
         cn(
           "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
           isActive
-            ? "bg-secondary text-foreground"
+            ? primary
+              ? "bg-gradient-bronze text-accent-foreground shadow-bronze"
+              : "bg-secondary text-foreground"
+            : primary
+            ? "bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.08]"
             : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
         )
       }
@@ -235,14 +247,13 @@ function UserMenu({ role, setRole }: { role: AppRole; setRole: (r: AppRole) => v
 function PageTitle({ pathname }: { pathname: string }) {
   const { t } = useTranslation();
   const map: Record<string, string> = {
-    "/app/analyze": t("nav.analyze"),
-    "/app/map": t("nav.map"),
-    "/app/saved": t("nav.saved"),
-    "/app/history": t("nav.history"),
-    "/app/alerts": t("nav.alerts"),
+    "/app": t("nav.home"),
+    "/app/analyze": t("nav.newAnalysis"),
+    "/app/library": t("nav.library"),
+    "/app/compare": t("nav.compare"),
     "/app/settings": t("nav.settings"),
     "/app/clients": t("nav.clients"),
-    "/app/library": t("nav.library"),
+    "/app/history": t("nav.history"),
   };
   const label = map[pathname];
   if (!label) return null;
