@@ -4,13 +4,15 @@
     "tagline": "Decision layer for real estate"
   },
   "nav": {
+    "home": "Home",
+    "newAnalysis": "New analysis",
+    "library": "Library",
+    "compare": "Compare",
+    "clients": "Clients",
+    "settings": "Settings",
     "analyze": "Analyze",
-    "map": "Map",
     "history": "History",
     "saved": "Saved",
-    "settings": "Settings",
-    "clients": "Clients",
-    "library": "Library",
     "alerts": "Alerts",
     "signIn": "Sign in",
     "signUp": "Get started",
@@ -37,7 +39,13 @@
     "new": "New",
     "back": "Back",
     "close": "Close",
-    "show": "Show"
+    "show": "Show",
+    "continue": "Continue",
+    "skip": "Skip",
+    "list": "List",
+    "map": "Map",
+    "open": "Open",
+    "copyLink": "Copy link"
   },
   "verdicts": {
     "green": "Strong buy",
@@ -53,11 +61,20 @@
     "rent": "Rent",
     "business": "Business"
   },
+  "trust": {
+    "identityVerified": "Identity verified",
+    "professionalStatus": "Pro status",
+    "sourceLinked": "Source linked",
+    "dataMatch": "Data matches",
+    "dataMismatch": "Data mismatch",
+    "limited": "Publication limited",
+    "unverified": "Unverified"
+  },
   "landing": {
-    "eyebrow": "AI Verdict Engine · 2026",
-    "headline": "Buy, negotiate, or walk away — in 30 seconds.",
-    "sub": "Propa is the decision layer over Zillow, Redfin and public GIS. Verdict, evidence and next steps — not another listing wall.",
-    "ctaPrimary": "Analyze a property",
+    "eyebrow": "AI Decision Layer · 2026",
+    "headline": "Understand a property. Trust the agent. Decide in 30 seconds.",
+    "sub": "Propa is the decision layer for real estate. Verdict, evidence, trust signals — and the next concrete step.",
+    "ctaPrimary": "Start a new analysis",
     "ctaSecondary": "See a sample report",
     "trustedBy": "Built on trusted public + market data",
     "pillars": {
@@ -111,17 +128,70 @@
     "noAccount": "Don't have an account?",
     "comingSoon": "Sign-in is a UI preview — full auth ships next."
   },
+  "home": {
+    "buyer": {
+      "eyebrow": "Buyer mode",
+      "headline": "What are you looking at today?",
+      "sub": "Start a new analysis. Get a verdict you can act on in 30 seconds.",
+      "primaryCta": "New analysis",
+      "secondaryCta": "Open library",
+      "compareCta": "Compare saved",
+      "recentTitle": "Recent analyses",
+      "recentEmpty": "Nothing analysed yet — start with the button above."
+    },
+    "agent": {
+      "eyebrow": "Agent mode",
+      "headline": "Scan a property. Pack it for a client.",
+      "sub": "Run an analysis, then turn it into a client-ready Pack in one tap.",
+      "primaryCta": "New analysis",
+      "secondaryCta": "Open clients",
+      "libraryCta": "Library",
+      "recentTitle": "Recent analyses",
+      "recentEmpty": "No analyses yet. Run one and assign it to a client."
+    }
+  },
   "analyze": {
-    "title": "How would you like to analyze?",
+    "title": "Start a new analysis",
     "sub": "Pick any input. We turn it into a decision in seconds.",
     "methods": {
+      "address": { "title": "Type an address", "desc": "Most accurate — we know the neighborhood" },
       "location": { "title": "Use my location", "desc": "Analyze right where you are" },
-      "photo": { "title": "Upload photos", "desc": "Façade, interior, documents" },
       "url": { "title": "Paste a listing URL", "desc": "Zillow, Redfin, Bayut…" },
+      "photo": { "title": "Upload photos", "desc": "Façade, interior, documents" },
+      "voice": { "title": "Voice", "desc": "Describe out loud" },
       "manual": { "title": "Manual entry", "desc": "Address, price, key facts" },
       "document": { "title": "Upload documents", "desc": "Deep dive on contracts & disclosures" }
     },
     "start": "Start analysis"
+  },
+  "gather": {
+    "title": "Gathering context for this address",
+    "sub": "Checking the neighborhood, risks and market benchmarks — so the verdict isn't pulled from thin air.",
+    "steps": {
+      "neighborhood": "Identifying neighborhood and surroundings (infrastructure, transit, environment)",
+      "risks": "Checking risk zones (flood / fire / noise corridors — where available)",
+      "zoning": "Looking up territory limitations (rules / zoning — where available)",
+      "market": "Estimating market benchmark for this area (if type and size were given)",
+      "confidence": "Locking in confidence level: how much we could actually verify"
+    },
+    "footnote": "Some data may be unavailable in some regions. We'll honestly show that in the Confidence score."
+  },
+  "refine": {
+    "title": "Quick refinements",
+    "sub": "Two minutes of inputs unlock a more precise verdict and a real price benchmark.",
+    "type": "Property type",
+    "types": {
+      "apartment": "Apartment",
+      "house": "House",
+      "townhouse": "Townhouse",
+      "land": "Land",
+      "commercial": "Commercial"
+    },
+    "area": "Area, m²",
+    "purpose": "Purpose",
+    "price": "Price (optional)",
+    "submit": "Get the verdict",
+    "skip": "Skip and continue"
   },
   "result": {
     "verdict": {
@@ -133,28 +203,92 @@
     "score": "Decision score",
     "keyMetric": "Key metric",
     "priceVsMarket": "Price vs market",
+    "marketBenchmark": "Normal price benchmark",
     "liquidity": "Liquidity",
     "reasons": "Why this verdict",
     "redFlags": "Red flags",
     "redFlagsHint": "How to verify",
     "nextSteps": "Next steps",
     "media": "Property media",
+    "trustObject": "Object trust",
+    "trustAgent": "Agent trust",
+    "evidence": "Evidence",
+    "evidenceHint": "Open detailed sources & checks",
     "actions": {
       "save": "Save",
       "compare": "Compare",
       "share": "Share",
       "export": "Export PDF",
-      "talk": "Talk to a pro",
-      "assign": "Assign to client"
+      "talk": "Message agent",
+      "assign": "Assign to client",
+      "pack": "Build Client Pack",
+      "publish": "Publish"
     },
     "agentTools": "Agent sales tools",
     "presentedBy": "Presented by"
   },
-  "history": {
-    "title": "History",
-    "sub": "Every analysis you've ever run.",
-    "empty": "Your analyses will appear here.",
-    "filter": { "all": "All", "green": "Strong buy", "yellow": "Negotiate", "red": "Walk away" }
+  "insufficient": {
+    "title": "Not quite enough data — yet",
+    "sub": "We have a preliminary read. Add a few inputs or run a deep check to get full confidence.",
+    "missingTitle": "What would help",
+    "actions": {
+      "add": "Add more data",
+      "deep": "Deep check · ${{price}}",
+      "deepHint": "Verified comps, document review, on-site signals",
+      "continue": "Continue with preliminary"
+    }
+  },
+  "library": {
+    "title": "Library",
+    "sub": "Saved properties and analyses. Switch between list and map.",
+    "empty": "Nothing saved yet",
+    "emptyHint": "Save analyses and properties — they'll appear here.",
+    "tabs": {
+      "list": "List",
+      "map": "Map"
+    },
+    "filters": {
+      "all": "All",
+      "saved": "Saved",
+      "analyses": "Analyses"
+    }
+  },
+  "compare": {
+    "title": "Compare properties",
+    "sub": "Pick 2–4 saved properties. We'll line them up by price, risk, signal and context.",
+    "empty": "Save at least 2 properties to compare them.",
+    "pick": "Pick to compare",
+    "min": "Pick at least 2",
+    "summary": "Best for your goal",
+    "metrics": {
+      "price": "Price",
+      "score": "Score",
+      "yield": "Yield",
+      "risks": "Risks",
+      "verdict": "Verdict"
+    }
+  },
+  "share": {
+    "report": "Public report",
+    "trustObject": "Object trust",
+    "trustAgent": "Agent trust",
+    "ctaContact": "Contact agent securely",
+    "ctaSubscribe": "Follow this agent",
+    "expired": "Report not available",
+    "expiredSub": "This share link has expired."
+  },
+  "pack": {
+    "title": "Client Pack",
+    "sub": "A clean, sendable mini-report for your client.",
+    "downloadCta": "Download Client Pack — $9",
+    "downloadHint": "Coming soon. We're counting interest.",
+    "openShare": "Open share-link"
+  },
+  "agentPage": {
+    "verifiedSince": "Verified since {{date}}",
+    "listings": "Listings",
+    "contact": "Contact securely",
+    "follow": "Follow"
   },
   "settings": {
     "title": "Settings",
@@ -162,7 +296,19 @@
     "theme": "Appearance",
     "privacy": "Data & privacy",
     "integrations": "Integrations",
-    "account": "Account"
+    "account": "Account",
+    "report": "Report a problem",
+    "reportSub": "Flag an object, an agent or a wrong analysis."
+  },
+  "report": {
+    "title": "Report a problem",
+    "sub": "Help us keep Propa accurate and safe.",
+    "kindObject": "Wrong data on an object",
+    "kindAgent": "Issue with an agent",
+    "kindFlag": "Wrong red flag",
+    "kindReport": "Issue with a report",
+    "submit": "Send report",
+    "thanks": "Thanks — we'll review within 48h."
   },
   "buyer": {
     "map": {
@@ -230,6 +376,10 @@
       "assignmentsTitle": "Client properties",
       "noAssignments": "No properties assigned yet.",
       "noAssignmentsHint": "Open Analyze → Assign to client.",
+      "viewMode": {
+        "list": "List",
+        "map": "Map"
+      },
       "statuses": {
         "new": "New",
         "sent": "Sent",
@@ -246,6 +396,15 @@
       "emptyHint": "Saved analyses and property portfolio will appear here.",
       "defaultHeadline": "Analysis",
       "metaLine": "{{kind}} · score {{score}} · confidence {{confidence}}%"
+    },
+    "publications": {
+      "title": "My publications",
+      "sub": "Properties you want to show publicly.",
+      "empty": "No publications yet",
+      "emptyHint": "From a result, tap Publish to add a property here.",
+      "statusOpen": "Public",
+      "statusReview": "Pending review",
+      "statusLimited": "Limited"
     }
   }
 }
