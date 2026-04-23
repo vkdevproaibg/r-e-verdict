@@ -13,18 +13,21 @@ import Signup from "./pages/auth/Signup";
 import SharePage from "./pages/SharePage";
 
 import AppShell from "./pages/app/AppShell";
+import HomePage from "./pages/app/HomePage";
 import AnalyzeHub from "./pages/app/AnalyzeHub";
-import AnalyzeLoadingPage from "./pages/app/AnalyzeLoadingPage";
+import GatherContextPage from "./pages/app/GatherContextPage";
+import RefinePage from "./pages/app/RefinePage";
+import InsufficientDataPage from "./pages/app/InsufficientDataPage";
 import ResultPage from "./pages/app/ResultPage";
+import LibraryPage from "./pages/app/LibraryPage";
+import ComparePage from "./pages/app/ComparePage";
 import HistoryPage from "./pages/app/HistoryPage";
 import SettingsPage from "./pages/app/SettingsPage";
 
-import BuyerMap from "./pages/buyer/BuyerMap";
 import Saved from "./pages/buyer/Saved";
 import Alerts from "./pages/buyer/Alerts";
 import ClientsList from "./pages/agent/ClientsList";
 import ClientDetail from "./pages/agent/ClientDetail";
-import Library from "./pages/agent/Library";
 
 import NotFound from "./pages/NotFound.tsx";
 
@@ -46,29 +49,36 @@ const App = () => (
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/share/:id" element={<SharePage />} />
 
-                {/* App shell */}
+                {/* App shell — unified for buyer + agent */}
                 <Route path="/app" element={<AppShell />}>
-                  <Route index element={<Navigate to="/app/analyze" replace />} />
+                  <Route index element={<HomePage />} />
                   <Route path="analyze" element={<AnalyzeHub />} />
-                  <Route path="map" element={<BuyerMap />} />
+                  <Route path="refine" element={<RefinePage />} />
+                  <Route path="library" element={<LibraryPage />} />
+                  <Route path="compare" element={<ComparePage />} />
                   <Route path="saved" element={<Saved />} />
                   <Route path="history" element={<HistoryPage />} />
                   <Route path="alerts" element={<Alerts />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="clients" element={<ClientsList />} />
                   <Route path="clients/:id" element={<ClientDetail />} />
-                  <Route path="library" element={<Library />} />
                 </Route>
+
+                {/* Full-screen flows inside shell */}
                 <Route path="/app/analyze/loading" element={<AppShell />}>
-                  <Route index element={<AnalyzeLoadingPage />} />
+                  <Route index element={<GatherContextPage />} />
+                </Route>
+                <Route path="/app/insufficient/:id" element={<AppShell />}>
+                  <Route index element={<InsufficientDataPage />} />
                 </Route>
                 <Route path="/app/result/:id" element={<AppShell />}>
                   <Route index element={<ResultPage />} />
                 </Route>
 
                 {/* Legacy redirects */}
-                <Route path="/agent/*" element={<Navigate to="/app/analyze" replace />} />
-                <Route path="/buyer/*" element={<Navigate to="/app/analyze" replace />} />
+                <Route path="/app/map" element={<Navigate to="/app/library" replace />} />
+                <Route path="/agent/*" element={<Navigate to="/app" replace />} />
+                <Route path="/buyer/*" element={<Navigate to="/app" replace />} />
                 <Route path="/onboarding/*" element={<Navigate to="/" replace />} />
 
                 <Route path="*" element={<NotFound />} />
