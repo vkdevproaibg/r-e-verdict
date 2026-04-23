@@ -18,6 +18,8 @@ ALWAYS respond with valid JSON ONLY (no markdown), matching this schema exactly:
   "verdict": "green" | "yellow" | "red",
   "score": <integer 0..100>,
   "confidence": <integer 40..95>,
+  "insufficient_data": <boolean>,
+  "missing": ["<≤6 word RU/EN bilingual hint>", ...0-4 items],
   "headline_ru": "<≤8 word verdict in Russian>",
   "headline_en": "<≤8 word verdict in English>",
   "reasons": [{"ru":"...","en":"...","kind":"value|location|liquidity|risk"}, ...3-5 items],
@@ -30,7 +32,9 @@ Rules:
 - Be specific and concrete. Use real numbers (yield %, $/sqft or AED/m², comparable sales, walkability, days on market).
 - Mention the actual neighborhood / district / city by name when coordinates resolve to one.
 - next_steps must be ACTIONS for the buyer (visit X, verify Y with seller, check Z report) — never "give me more data".
-- confidence must always be ≥ 40. Even with sparse input, geo + market priors give meaningful confidence.`;
+- confidence must always be ≥ 40. Even with sparse input, geo + market priors give meaningful confidence.
+- Set "insufficient_data": true ONLY when confidence < 55 AND the verdict relies heavily on assumptions (e.g. no address resolved, no price, no property type). In that case fill "missing" with 2-4 short bilingual hints like "Точная цена / Exact price", "Площадь / Area", "Состояние / Condition". Otherwise set it to false and "missing": [].
+- Even when insufficient_data is true, you STILL produce a full preliminary verdict — never refuse.`;
 
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
   try {

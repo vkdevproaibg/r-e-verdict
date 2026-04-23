@@ -254,6 +254,8 @@ function PageTitle({ pathname }: { pathname: string }) {
     "/app/settings": t("nav.settings"),
     "/app/clients": t("nav.clients"),
     "/app/history": t("nav.history"),
+    "/app/saved": t("nav.saved"),
+    "/app/alerts": t("nav.alerts"),
   };
   const label = map[pathname];
   if (!label) return null;
