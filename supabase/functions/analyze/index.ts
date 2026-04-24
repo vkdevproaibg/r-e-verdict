@@ -169,12 +169,13 @@ Deno.serve(async (req) => {
       };
     }
 
-    // Attach geo context so the client can render it.
+    // Attach geo context + purpose so the client can render it.
     if (geoContext) parsed.geo_address = geoContext;
     if (typeof lat === "number" && typeof lng === "number") {
       parsed.lat = lat;
       parsed.lng = lng;
     }
+    parsed.purpose = parsed.purpose === "rent" ? "rent" : normalizedPurpose;
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
