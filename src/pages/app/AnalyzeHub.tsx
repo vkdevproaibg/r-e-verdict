@@ -25,15 +25,22 @@ const methods: { key: Method; Icon: typeof MapPin; primary?: boolean }[] = [
 export default function AnalyzeHub() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { geo, requestGeo } = useApp();
+  const { geo, requestGeo, geoStatus } = useApp();
   const [active, setActive] = useState<Method | null>(null);
   const [text, setText] = useState("");
+  // Photo flow needs an address (or geo) attached, since the picture alone
+  // cannot tell the AI WHERE the property is.
+  const [photoAddress, setPhotoAddress] = useState("");
+  const [photoUseGeo, setPhotoUseGeo] = useState(false);
 
-  const start = (kind: string, q?: string) => {
+  const start = (kind: string, q?: string, opts?: { withGeo?: boolean }) => {
     setActive(null);
     setText("");
-    // Always go through gather screen — never skip the trust step.
-    const url = `/app/analyze/loading?kind=${kind}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+    setPhotoAddress("");
+    setPhotoUseGeo(false);
+    // For non-location kinds we normally drop geo. The photo flow can opt back in.
+    const realKind = opts?.withGeo && kind !== "location" ? "location" : kind;
+    const url = `/app/analyze/loading?kind=${realKind}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
     navigate(url);
   };
 
@@ -57,6 +64,24 @@ export default function AnalyzeHub() {
   const submitText = () => {
     if (!text.trim() || !active) return;
     start(active, text);
+  };
+
+  const submitPhoto = async () => {
+    // Require either a typed address OR geolocation — never just a photo.
+    if (photoUseGeo) {
+      if (!geo) await requestGeo();
+      if (!geo) {
+        toast.error(t("analyze.photo.geoRequired"));
+        return;
+      }
+      start("photo", undefined, { withGeo: true });
+      return;
+    }
+    if (!photoAddress.trim()) {
+      toast.error(t("analyze.photo.addressRequired"));
+      return;
+    }
+    start("photo", photoAddress);
   };
 
   return (
@@ -116,14 +141,58 @@ export default function AnalyzeHub() {
                 className="h-12 rounded-xl"
                 autoFocus
               />
-            ) : active === "photo" || active === "document" ? (
+            ) : active === "photo" ? (
+              <>
+                <div className="rounded-2xl border-2 border-dashed border-border p-8 text-center">
+                  <div className="h-12 w-12 rounded-2xl bg-secondary mx-auto grid place-items-center">
+                    <Camera className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div className="mt-3 text-sm font-medium">{t("analyze.photo.uploadLabel")}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{t("analyze.photo.uploadHint")}</div>
+                </div>
+                <div className="rounded-2xl border border-accent/30 bg-accent/5 p-3 text-xs text-muted-foreground leading-relaxed">
+                  <strong className="text-foreground">{t("analyze.photo.whyAddress")}:</strong>{" "}
+                  {t("analyze.photo.whyAddressBody")}
+                </div>
+                <Input
+                  value={photoAddress}
+                  onChange={(e) => {
+                    setPhotoAddress(e.target.value);
+                    if (e.target.value) setPhotoUseGeo(false);
+                  }}
+                  placeholder={t("analyze.photo.addressPlaceholder")}
+                  className="h-12 rounded-xl"
+                  disabled={photoUseGeo}
+                />
+                <div className="text-center text-[11px] uppercase tracking-widest text-muted-foreground">
+                  {t("analyze.photo.or")}
+                </div>
+                <Button
+                  type="button"
+                  variant={photoUseGeo ? "default" : "outline"}
+                  className={cn(
+                    "w-full h-11 rounded-xl",
+                    photoUseGeo && "bg-gradient-bronze text-accent-foreground shadow-bronze hover:opacity-90"
+                  )}
+                  onClick={async () => {
+                    if (!geo) await requestGeo();
+                    setPhotoUseGeo(true);
+                    setPhotoAddress("");
+                  }}
+                  disabled={geoStatus === "requesting"}
+                >
+                  <MapPin className="h-4 w-4 mr-2" />
+                  {photoUseGeo
+                    ? geo
+                      ? t("analyze.photo.geoOn")
+                      : t("analyze.photo.geoRequesting")
+                    : t("analyze.photo.useGeo")}
+                </Button>
+              </>
+            ) : active === "document" ? (
               <div className="rounded-2xl border-2 border-dashed border-border p-10 text-center">
                 <div className="h-12 w-12 rounded-2xl bg-secondary mx-auto grid place-items-center">
-                  {active === "photo" ? (
-                    <Camera className="h-5 w-5 text-muted-foreground" />
-                  ) : (
-                    <FileText className="h-5 w-5 text-muted-foreground" />
-                  )}
+                  <FileText className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div className="mt-3 text-sm font-medium">Drop file here</div>
                 <div className="mt-1 text-xs text-muted-foreground">Upload coming next iteration</div>
@@ -139,14 +208,22 @@ export default function AnalyzeHub() {
             )}
             <Button
               onClick={() => {
-                if (active === "photo" || active === "document") {
+                if (active === "photo") {
+                  submitPhoto();
+                  return;
+                }
+                if (active === "document") {
                   start(active, "Sample property");
                   return;
                 }
                 submitText();
               }}
-              disabled={active !== "photo" && active !== "document" && !text.trim()}
-              className="w-full h-12 rounded-xl bg-foreground text-background hover:bg-foreground/90"
+              disabled={
+                active !== "photo" &&
+                active !== "document" &&
+                !text.trim()
+              }
+              className="w-full h-12 rounded-xl bg-gradient-bronze text-accent-foreground shadow-bronze hover:opacity-90 font-semibold"
             >
               {t("analyze.start")} <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
