@@ -40,6 +40,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(initial.geo ?? null);
   const [geoStatus, setGeoStatus] = useState<AppState["geoStatus"]>("idle");
 
+  // Keep RoleContext (separate store keyed under propaai_role_v2) in sync.
+  const setRole = (r: Role) => {
+    setRoleS(r);
+    try { localStorage.setItem("propaai_role_v2", r); } catch { /* ignore */ }
+  };
+
   useEffect(() => {
     localStorage.setItem(
       KEY,
@@ -73,7 +79,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <Ctx.Provider
       value={{
         role,
-        setRole: setRoleS,
+        setRole,
         goal,
         setGoal: setGoalS,
         lang,
