@@ -28,6 +28,7 @@ export default function AnalyzeHub() {
   const { geo, requestGeo, geoStatus } = useApp();
   const [active, setActive] = useState<Method | null>(null);
   const [text, setText] = useState("");
+  const [purpose, setPurpose] = useState<"buy" | "rent">("buy");
   // Photo flow needs an address (or geo) attached, since the picture alone
   // cannot tell the AI WHERE the property is.
   const [photoAddress, setPhotoAddress] = useState("");
@@ -40,8 +41,11 @@ export default function AnalyzeHub() {
     setPhotoUseGeo(false);
     // For non-location kinds we normally drop geo. The photo flow can opt back in.
     const realKind = opts?.withGeo && kind !== "location" ? "location" : kind;
-    const url = `/app/analyze/loading?kind=${realKind}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
-    navigate(url);
+    const params = new URLSearchParams();
+    params.set("kind", realKind);
+    if (q) params.set("q", q);
+    params.set("purpose", purpose);
+    navigate(`/app/analyze/loading?${params.toString()}`);
   };
 
   const onPick = async (m: Method) => {
