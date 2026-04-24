@@ -448,3 +448,84 @@ function ToolCard({ title, text }: { title: string; text: string }) {
     </div>
   );
 }
+
+function formatNum(n: number): string {
+  if (!isFinite(n)) return "—";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 1 : 2)}M`;
+  if (n >= 1_000) return `${Math.round(n).toLocaleString("en-US")}`;
+  return `${Math.round(n)}`;
+}
+
+function MarketCard({
+  market,
+  lang,
+  t,
+}: {
+  market: MarketBlock;
+  lang: "ru" | "en";
+  t: (k: string) => string;
+}) {
+  const dir = market.trend_direction ?? (typeof market.trend_pct_yoy === "number"
+    ? market.trend_pct_yoy > 0.5 ? "up" : market.trend_pct_yoy < -0.5 ? "down" : "flat"
+    : "flat");
+  const TrendIcon = dir === "up" ? TrendingUp : dir === "down" ? TrendingDown : Minus;
+  const trendColor =
+    dir === "up" ? "text-verdict-green" : dir === "down" ? "text-verdict-red" : "text-muted-foreground";
+  const trendBg =
+    dir === "up" ? "bg-verdict-green/10" : dir === "down" ? "bg-verdict-red/10" : "bg-secondary";
+  const unit = market.unit === "sqft" ? "sqft" : "м²";
+  const ccy = market.currency ?? "";
+  const trendComment = lang === "ru" ? market.trend_comment_ru : market.trend_comment_en;
+  const yoy = typeof market.trend_pct_yoy === "number" ? market.trend_pct_yoy : null;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            {lang === "ru" ? `Средняя цена за ${unit}` : `Average price per ${unit}`}
+          </div>
+          <div className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
+            {formatNum(market.avg_price_per_unit ?? 0)} <span className="text-base font-normal text-muted-foreground">{ccy}/{unit}</span>
+          </div>
+          {(market.low_price_per_unit && market.high_price_per_unit) && (
+            <div className="mt-1 text-xs text-muted-foreground tabular-nums">
+              {lang === "ru" ? "Диапазон: " : "Range: "}
+              {formatNum(market.low_price_per_unit)}–{formatNum(market.high_price_per_unit)} {ccy}/{unit}
+            </div>
+          )}
+        </div>
+        <div className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold", trendBg, trendColor)}>
+          <TrendIcon className="h-4 w-4" />
+          {yoy !== null ? `${yoy > 0 ? "+" : ""}${yoy.toFixed(1)}% YoY` : t("result.trendFlat")}
+        </div>
+      </div>
+
+      {trendComment && (
+        <p className="mt-3 text-sm text-foreground/80 leading-relaxed">{trendComment}</p>
+      )}
+
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {market.estimated_total ? (
+          <Metric
+            label={lang === "ru" ? "Ориентир по объекту" : "Estimated fair price"}
+            value={`${formatNum(market.estimated_total)} ${ccy}`}
+            accent
+          />
+        ) : null}
+        {typeof market.rent_per_month === "number" ? (
+          <Metric
+            label={lang === "ru" ? "Аренда / мес" : "Rent / mo"}
+            value={`${formatNum(market.rent_per_month)} ${ccy}`}
+          />
+        ) : null}
+        {typeof market.gross_yield_pct === "number" ? (
+          <Metric
+            label={lang === "ru" ? "Валовая доходность" : "Gross yield"}
+            value={`${market.gross_yield_pct.toFixed(1)}%`}
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}
