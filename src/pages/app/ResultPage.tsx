@@ -15,6 +15,11 @@ import {
   UserPlus,
   Phone,
   Copy,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Home,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
