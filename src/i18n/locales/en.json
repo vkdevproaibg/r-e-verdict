@@ -162,7 +162,20 @@
       "manual": { "title": "Manual entry", "desc": "Address, price, key facts" },
       "document": { "title": "Upload documents", "desc": "Deep dive on contracts & disclosures" }
     },
-    "start": "Start analysis"
+    "start": "Start analysis",
+    "photo": {
+      "uploadLabel": "Drop photos here",
+      "uploadHint": "Upload coming next iteration",
+      "whyAddress": "Address required",
+      "whyAddressBody": "A photo alone can't tell us WHERE the property is. Add an address or use your location — otherwise the verdict would be guesswork.",
+      "addressPlaceholder": "e.g. 123 Main St, Brooklyn NY",
+      "addressRequired": "Enter an address or enable location",
+      "geoRequired": "Location is required for this mode",
+      "geoRequesting": "Requesting permission…",
+      "or": "or",
+      "useGeo": "Use my current location",
+      "geoOn": "Location captured"
+    }
   },
   "gather": {
     "title": "Gathering context for this address",

@@ -319,7 +319,7 @@ export default function ResultPage() {
           ) : (
             <div className="mt-3 grid sm:grid-cols-2 gap-2">
               <Button
-                className="h-12 rounded-xl bg-foreground text-background hover:bg-foreground/90 justify-start"
+                className="h-12 rounded-xl bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze justify-start font-semibold"
                 onClick={() => toast.info(lang === "ru" ? "Откройте «Клиенты»" : "Open Clients tab")}
               >
                 <UserPlus className="h-4 w-4 mr-2" /> {t("result.actions.assign")}

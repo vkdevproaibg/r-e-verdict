@@ -12,6 +12,12 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import SharePage from "./pages/SharePage";
 
+import Splash from "./pages/onboarding/Splash";
+import Welcome from "./pages/onboarding/Welcome";
+import RoleSelect from "./pages/onboarding/RoleSelect";
+import GoalSelect from "./pages/onboarding/GoalSelect";
+import Permissions from "./pages/onboarding/Permissions";
+
 import AppShell from "./pages/app/AppShell";
 import HomePage from "./pages/app/HomePage";
 import AnalyzeHub from "./pages/app/AnalyzeHub";
@@ -75,11 +81,17 @@ const App = () => (
                   <Route index element={<ResultPage />} />
                 </Route>
 
+                {/* Onboarding */}
+                <Route path="/splash" element={<Splash />} />
+                <Route path="/onboarding/welcome" element={<Welcome />} />
+                <Route path="/onboarding/role" element={<RoleSelect />} />
+                <Route path="/onboarding/goal" element={<GoalSelect />} />
+                <Route path="/onboarding/permissions" element={<Permissions />} />
+
                 {/* Legacy redirects */}
                 <Route path="/app/map" element={<Navigate to="/app/library" replace />} />
                 <Route path="/agent/*" element={<Navigate to="/app" replace />} />
                 <Route path="/buyer/*" element={<Navigate to="/app" replace />} />
-                <Route path="/onboarding/*" element={<Navigate to="/" replace />} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>

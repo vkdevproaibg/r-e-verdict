@@ -6,11 +6,12 @@ import { MapPin, Camera, Bell, Check, ArrowRight } from "lucide-react";
 
 export default function Permissions() {
   const navigate = useNavigate();
-  const { requestGeo, geoStatus, setOnboarded, role } = useApp();
+  const { requestGeo, geoStatus, setOnboarded, role, setRole } = useApp();
 
   const finish = () => {
+    if (!role) setRole("buyer");
     setOnboarded(true);
-    navigate(role === "agent" ? "/agent" : "/buyer", { replace: true });
+    navigate("/app", { replace: true });
   };
 
   const items = [
@@ -113,11 +114,11 @@ export default function Permissions() {
 
         <Button
           size="lg"
-          className="w-full h-12 bg-foreground text-background hover:bg-foreground/90"
+          className="w-full h-13 bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze rounded-2xl font-semibold"
           onClick={finish}
         >
           Продолжить
-          <span className="text-background/60 ml-1.5 text-xs">Continue</span>
+          <span className="text-accent-foreground/70 ml-1.5 text-xs font-normal">Continue</span>
           <ArrowRight className="ml-auto h-4 w-4" />
         </Button>
       </div>
