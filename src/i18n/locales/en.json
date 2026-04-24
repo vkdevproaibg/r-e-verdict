@@ -153,6 +153,11 @@
   "analyze": {
     "title": "Start a new analysis",
     "sub": "Pick any input. We turn it into a decision in seconds.",
+    "purpose": {
+      "label": "Purpose",
+      "buy": "Buy",
+      "rent": "Rent"
+    },
     "methods": {
       "address": { "title": "Type an address", "desc": "Most accurate — we know the neighborhood" },
       "location": { "title": "Use my location", "desc": "Analyze right where you are" },
@@ -216,7 +221,9 @@
     "score": "Decision score",
     "keyMetric": "Key metric",
     "priceVsMarket": "Price vs market",
-    "marketBenchmark": "Normal price benchmark",
+    "marketBenchmark": "Price / sqm (market)",
+    "marketSection": "Market price & trend",
+    "trendFlat": "Stable trend",
     "liquidity": "Liquidity",
     "reasons": "Why this verdict",
     "redFlags": "Red flags",
