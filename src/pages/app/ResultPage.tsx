@@ -154,9 +154,17 @@ export default function ResultPage() {
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
               <Sparkles className="h-3 w-3" /> AI Verdict
             </div>
-            <div className={cn("mt-2 text-[11px] uppercase tracking-widest font-semibold inline-flex items-center gap-1.5", v.text)}>
-              <span className={cn("h-1.5 w-1.5 rounded-full", v.dot)} />
-              {verdictLabel}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className={cn("text-[11px] uppercase tracking-widest font-semibold inline-flex items-center gap-1.5", v.text)}>
+                <span className={cn("h-1.5 w-1.5 rounded-full", v.dot)} />
+                {verdictLabel}
+              </div>
+              {result.purpose && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-background/70 border border-border px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {result.purpose === "rent" ? <Building2 className="h-3 w-3" /> : <Home className="h-3 w-3" />}
+                  {t(`analyze.purpose.${result.purpose}`)}
+                </span>
+              )}
             </div>
             <h1 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
               {headline}
@@ -165,11 +173,34 @@ export default function ResultPage() {
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Metric label={t("result.score")} value={`${result.score}`} accent />
               <Metric label={t("result.confidence")} value={`${result.confidence}%`} />
-              <Metric label={t("result.priceVsMarket")} value="−4%" sub={lang === "ru" ? "ниже комплов" : "vs comps"} />
-              <Metric label={t("result.liquidity")} value="High" sub="< 60d" />
+              {result.market?.avg_price_per_unit ? (
+                <Metric
+                  label={t("result.marketBenchmark")}
+                  value={`${formatNum(result.market.avg_price_per_unit)} ${result.market.currency ?? ""}`}
+                  sub={`/ ${result.market.unit === "sqft" ? "sqft" : "м²"}`}
+                />
+              ) : (
+                <Metric label={t("result.priceVsMarket")} value="—" sub={lang === "ru" ? "нет данных" : "no data"} />
+              )}
+              {typeof result.market?.gross_yield_pct === "number" ? (
+                <Metric
+                  label={lang === "ru" ? "Доходность" : "Yield"}
+                  value={`${result.market.gross_yield_pct.toFixed(1)}%`}
+                  sub={lang === "ru" ? "годовая" : "annual"}
+                />
+              ) : (
+                <Metric label={t("result.liquidity")} value="High" sub="< 60d" />
+              )}
             </div>
           </div>
         </motion.div>
+
+        {/* Market price benchmark */}
+        {result.market?.avg_price_per_unit && (
+          <Section className="lg:col-span-12" title={t("result.marketSection")}>
+            <MarketCard market={result.market} lang={lang} t={t} />
+          </Section>
+        )}
 
         {/* Location + 3D view */}
         {typeof result.lat === "number" && typeof result.lng === "number" && (
