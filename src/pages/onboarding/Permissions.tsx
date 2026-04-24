@@ -6,11 +6,12 @@ import { MapPin, Camera, Bell, Check, ArrowRight } from "lucide-react";
 
 export default function Permissions() {
   const navigate = useNavigate();
-  const { requestGeo, geoStatus, setOnboarded, role } = useApp();
+  const { requestGeo, geoStatus, setOnboarded, role, setRole } = useApp();
 
   const finish = () => {
+    if (!role) setRole("buyer");
     setOnboarded(true);
-    navigate(role === "agent" ? "/agent" : "/buyer", { replace: true });
+    navigate("/app", { replace: true });
   };
 
   const items = [

@@ -9,7 +9,7 @@ export default function Splash() {
   useEffect(() => {
     const t = setTimeout(() => {
       if (onboarded && role) {
-        navigate(role === "agent" ? "/agent" : "/buyer", { replace: true });
+        navigate("/app", { replace: true });
       } else {
         navigate("/onboarding/welcome", { replace: true });
       }
