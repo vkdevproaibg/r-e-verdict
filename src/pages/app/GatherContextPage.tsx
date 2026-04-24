@@ -38,13 +38,17 @@ export default function GatherContextPage() {
 
     (async () => {
       const id = `analysis_${Date.now()}`;
+      // Geo is ONLY meaningful when the user explicitly entered via "use my location".
+      // For address / text / url / photo / document the AI must rely on the query
+      // (or the address baked into refine{}), never on the device coordinates.
+      const useGeo = kind === "location";
       try {
         const { data, error } = await db.functions.invoke("analyze", {
           body: {
             kind,
             query: q,
-            lat: geo?.lat,
-            lng: geo?.lng,
+            lat: useGeo ? geo?.lat : undefined,
+            lng: useGeo ? geo?.lng : undefined,
             refine,
           },
         });
