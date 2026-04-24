@@ -28,6 +28,7 @@ export default function AnalyzeHub() {
   const { geo, requestGeo, geoStatus } = useApp();
   const [active, setActive] = useState<Method | null>(null);
   const [text, setText] = useState("");
+  const [purpose, setPurpose] = useState<"buy" | "rent">("buy");
   // Photo flow needs an address (or geo) attached, since the picture alone
   // cannot tell the AI WHERE the property is.
   const [photoAddress, setPhotoAddress] = useState("");
@@ -40,8 +41,11 @@ export default function AnalyzeHub() {
     setPhotoUseGeo(false);
     // For non-location kinds we normally drop geo. The photo flow can opt back in.
     const realKind = opts?.withGeo && kind !== "location" ? "location" : kind;
-    const url = `/app/analyze/loading?kind=${realKind}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
-    navigate(url);
+    const params = new URLSearchParams();
+    params.set("kind", realKind);
+    if (q) params.set("q", q);
+    params.set("purpose", purpose);
+    navigate(`/app/analyze/loading?${params.toString()}`);
   };
 
   const onPick = async (m: Method) => {
@@ -101,8 +105,32 @@ export default function AnalyzeHub() {
         <p className="mt-2 text-base text-muted-foreground max-w-2xl">{t("analyze.sub")}</p>
       </motion.div>
 
+      {/* Purpose selector */}
+      <div className="mt-6">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+          {t("analyze.purpose.label")}
+        </div>
+        <div className="inline-flex rounded-2xl border border-border bg-card p-1">
+          {(["buy", "rent"] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPurpose(p)}
+              className={cn(
+                "px-4 h-10 rounded-xl text-sm font-medium transition-all",
+                purpose === p
+                  ? "bg-gradient-bronze text-accent-foreground shadow-bronze"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {t(`analyze.purpose.${p}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Hero method — Address */}
-      <div className="mt-8">
+      <div className="mt-6">
         <MethodCard method={methods[0]} index={0} onClick={() => onPick("address")} large />
       </div>
 

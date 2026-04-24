@@ -15,6 +15,11 @@ import {
   UserPlus,
   Phone,
   Copy,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Home,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -25,6 +30,21 @@ import { cn } from "@/lib/utils";
 import heroExterior from "@/assets/hero-exterior.jpg";
 import heroInterior from "@/assets/hero-interior.jpg";
 import heroCity from "@/assets/hero-city.jpg";
+
+interface MarketBlock {
+  currency?: string;
+  unit?: "sqm" | "sqft";
+  avg_price_per_unit?: number;
+  low_price_per_unit?: number;
+  high_price_per_unit?: number;
+  estimated_total?: number;
+  trend_pct_yoy?: number;
+  trend_direction?: "up" | "down" | "flat";
+  trend_comment_ru?: string;
+  trend_comment_en?: string;
+  rent_per_month?: number | null;
+  gross_yield_pct?: number | null;
+}
 
 interface AIResult {
   verdict: Verdict;
@@ -41,6 +61,8 @@ interface AIResult {
   lat?: number;
   lng?: number;
   geo_address?: string;
+  purpose?: "buy" | "rent";
+  market?: MarketBlock;
 }
 
 const verdictTokens: Record<Verdict, { bg: string; text: string; ring: string; dot: string }> = {
@@ -132,9 +154,17 @@ export default function ResultPage() {
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
               <Sparkles className="h-3 w-3" /> AI Verdict
             </div>
-            <div className={cn("mt-2 text-[11px] uppercase tracking-widest font-semibold inline-flex items-center gap-1.5", v.text)}>
-              <span className={cn("h-1.5 w-1.5 rounded-full", v.dot)} />
-              {verdictLabel}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className={cn("text-[11px] uppercase tracking-widest font-semibold inline-flex items-center gap-1.5", v.text)}>
+                <span className={cn("h-1.5 w-1.5 rounded-full", v.dot)} />
+                {verdictLabel}
+              </div>
+              {result.purpose && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-background/70 border border-border px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {result.purpose === "rent" ? <Building2 className="h-3 w-3" /> : <Home className="h-3 w-3" />}
+                  {t(`analyze.purpose.${result.purpose}`)}
+                </span>
+              )}
             </div>
             <h1 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
               {headline}
@@ -143,11 +173,34 @@ export default function ResultPage() {
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Metric label={t("result.score")} value={`${result.score}`} accent />
               <Metric label={t("result.confidence")} value={`${result.confidence}%`} />
-              <Metric label={t("result.priceVsMarket")} value="−4%" sub={lang === "ru" ? "ниже комплов" : "vs comps"} />
-              <Metric label={t("result.liquidity")} value="High" sub="< 60d" />
+              {result.market?.avg_price_per_unit ? (
+                <Metric
+                  label={t("result.marketBenchmark")}
+                  value={`${formatNum(result.market.avg_price_per_unit)} ${result.market.currency ?? ""}`}
+                  sub={`/ ${result.market.unit === "sqft" ? "sqft" : "м²"}`}
+                />
+              ) : (
+                <Metric label={t("result.priceVsMarket")} value="—" sub={lang === "ru" ? "нет данных" : "no data"} />
+              )}
+              {typeof result.market?.gross_yield_pct === "number" ? (
+                <Metric
+                  label={lang === "ru" ? "Доходность" : "Yield"}
+                  value={`${result.market.gross_yield_pct.toFixed(1)}%`}
+                  sub={lang === "ru" ? "годовая" : "annual"}
+                />
+              ) : (
+                <Metric label={t("result.liquidity")} value="High" sub="< 60d" />
+              )}
             </div>
           </div>
         </motion.div>
+
+        {/* Market price benchmark */}
+        {result.market?.avg_price_per_unit && (
+          <Section className="lg:col-span-12" title={t("result.marketSection")}>
+            <MarketCard market={result.market} lang={lang} t={t} />
+          </Section>
+        )}
 
         {/* Location + 3D view */}
         {typeof result.lat === "number" && typeof result.lng === "number" && (
@@ -392,6 +445,87 @@ function ToolCard({ title, text }: { title: string; text: string }) {
         </button>
       </div>
       <pre className="text-xs text-foreground/80 whitespace-pre-wrap font-sans leading-relaxed">{text}</pre>
+    </div>
+  );
+}
+
+function formatNum(n: number): string {
+  if (!isFinite(n)) return "—";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 1 : 2)}M`;
+  if (n >= 1_000) return `${Math.round(n).toLocaleString("en-US")}`;
+  return `${Math.round(n)}`;
+}
+
+function MarketCard({
+  market,
+  lang,
+  t,
+}: {
+  market: MarketBlock;
+  lang: "ru" | "en";
+  t: (k: string) => string;
+}) {
+  const dir = market.trend_direction ?? (typeof market.trend_pct_yoy === "number"
+    ? market.trend_pct_yoy > 0.5 ? "up" : market.trend_pct_yoy < -0.5 ? "down" : "flat"
+    : "flat");
+  const TrendIcon = dir === "up" ? TrendingUp : dir === "down" ? TrendingDown : Minus;
+  const trendColor =
+    dir === "up" ? "text-verdict-green" : dir === "down" ? "text-verdict-red" : "text-muted-foreground";
+  const trendBg =
+    dir === "up" ? "bg-verdict-green/10" : dir === "down" ? "bg-verdict-red/10" : "bg-secondary";
+  const unit = market.unit === "sqft" ? "sqft" : "м²";
+  const ccy = market.currency ?? "";
+  const trendComment = lang === "ru" ? market.trend_comment_ru : market.trend_comment_en;
+  const yoy = typeof market.trend_pct_yoy === "number" ? market.trend_pct_yoy : null;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            {lang === "ru" ? `Средняя цена за ${unit}` : `Average price per ${unit}`}
+          </div>
+          <div className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
+            {formatNum(market.avg_price_per_unit ?? 0)} <span className="text-base font-normal text-muted-foreground">{ccy}/{unit}</span>
+          </div>
+          {(market.low_price_per_unit && market.high_price_per_unit) && (
+            <div className="mt-1 text-xs text-muted-foreground tabular-nums">
+              {lang === "ru" ? "Диапазон: " : "Range: "}
+              {formatNum(market.low_price_per_unit)}–{formatNum(market.high_price_per_unit)} {ccy}/{unit}
+            </div>
+          )}
+        </div>
+        <div className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold", trendBg, trendColor)}>
+          <TrendIcon className="h-4 w-4" />
+          {yoy !== null ? `${yoy > 0 ? "+" : ""}${yoy.toFixed(1)}% YoY` : t("result.trendFlat")}
+        </div>
+      </div>
+
+      {trendComment && (
+        <p className="mt-3 text-sm text-foreground/80 leading-relaxed">{trendComment}</p>
+      )}
+
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {market.estimated_total ? (
+          <Metric
+            label={lang === "ru" ? "Ориентир по объекту" : "Estimated fair price"}
+            value={`${formatNum(market.estimated_total)} ${ccy}`}
+            accent
+          />
+        ) : null}
+        {typeof market.rent_per_month === "number" ? (
+          <Metric
+            label={lang === "ru" ? "Аренда / мес" : "Rent / mo"}
+            value={`${formatNum(market.rent_per_month)} ${ccy}`}
+          />
+        ) : null}
+        {typeof market.gross_yield_pct === "number" ? (
+          <Metric
+            label={lang === "ru" ? "Валовая доходность" : "Gross yield"}
+            value={`${market.gross_yield_pct.toFixed(1)}%`}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
