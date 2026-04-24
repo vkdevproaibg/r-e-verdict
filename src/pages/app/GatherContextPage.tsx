@@ -18,6 +18,7 @@ export default function GatherContextPage() {
 
   const kind = params.get("kind") ?? "text";
   const q = params.get("q") ?? "";
+  const purpose = (params.get("purpose") === "rent" ? "rent" : "buy") as "buy" | "rent";
   const refineParam = params.get("refine");
   let refine: Record<string, string> = {};
   if (refineParam) {
@@ -50,10 +51,11 @@ export default function GatherContextPage() {
             lat: useGeo ? geo?.lat : undefined,
             lng: useGeo ? geo?.lng : undefined,
             refine,
+            purpose,
           },
         });
         if (error) throw error;
-        const payload = { ...data, input_kind: kind, query: q };
+        const payload = { ...data, input_kind: kind, query: q, purpose };
         sessionStorage.setItem(`propaai_result_${id}`, JSON.stringify(payload));
         sessionStorage.setItem("propaai_last_result", JSON.stringify(payload));
 
