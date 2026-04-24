@@ -26,6 +26,21 @@ import heroExterior from "@/assets/hero-exterior.jpg";
 import heroInterior from "@/assets/hero-interior.jpg";
 import heroCity from "@/assets/hero-city.jpg";
 
+interface MarketBlock {
+  currency?: string;
+  unit?: "sqm" | "sqft";
+  avg_price_per_unit?: number;
+  low_price_per_unit?: number;
+  high_price_per_unit?: number;
+  estimated_total?: number;
+  trend_pct_yoy?: number;
+  trend_direction?: "up" | "down" | "flat";
+  trend_comment_ru?: string;
+  trend_comment_en?: string;
+  rent_per_month?: number | null;
+  gross_yield_pct?: number | null;
+}
+
 interface AIResult {
   verdict: Verdict;
   score: number;
@@ -41,6 +56,8 @@ interface AIResult {
   lat?: number;
   lng?: number;
   geo_address?: string;
+  purpose?: "buy" | "rent";
+  market?: MarketBlock;
 }
 
 const verdictTokens: Record<Verdict, { bg: string; text: string; ring: string; dot: string }> = {
