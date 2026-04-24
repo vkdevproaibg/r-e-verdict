@@ -51,8 +51,8 @@ export default function Landing() {
             >
               {t("nav.signIn")}
             </Link>
-            <Button asChild size="sm" className="rounded-full bg-foreground text-background hover:bg-foreground/90 h-9 px-4">
-              <Link to="/signup">{t("nav.signUp")}</Link>
+            <Button asChild size="sm" className="rounded-full bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze h-9 px-4 font-semibold">
+              <Link to="/splash">{t("nav.signUp")}</Link>
             </Button>
           </div>
         </div>
@@ -78,8 +78,8 @@ export default function Landing() {
               {t("landing.sub")}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="h-12 px-6 rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-elevated">
-                <Link to="/app/analyze">
+              <Button asChild size="lg" className="h-13 px-7 rounded-full bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze font-semibold">
+                <Link to="/splash">
                   {t("landing.ctaPrimary")} <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Link>
               </Button>
@@ -180,8 +180,8 @@ export default function Landing() {
             <p className="mt-4 text-base text-muted-foreground leading-relaxed">
               {t("landing.sample.body")}
             </p>
-            <Button asChild size="lg" className="mt-7 h-12 px-6 rounded-full bg-foreground text-background hover:bg-foreground/90">
-              <Link to="/app/analyze">
+            <Button asChild size="lg" className="mt-7 h-13 px-7 rounded-full bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze font-semibold">
+              <Link to="/splash">
                 {t("landing.ctaPrimary")} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Link>
             </Button>
@@ -234,8 +234,8 @@ export default function Landing() {
             {t("landing.ctaFooter.title")}
           </h2>
           <p className="mt-4 text-muted-foreground">{t("landing.ctaFooter.body")}</p>
-          <Button asChild size="lg" className="mt-8 h-12 px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-elevated">
-            <Link to="/app/analyze">
+          <Button asChild size="lg" className="mt-8 h-13 px-8 rounded-full bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze font-semibold">
+            <Link to="/splash">
               {t("landing.ctaFooter.cta")} <ArrowRight className="ml-1.5 h-4 w-4" />
             </Link>
           </Button>
