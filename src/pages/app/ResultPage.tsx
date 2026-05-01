@@ -591,6 +591,34 @@ function formatNum(n: number): string {
   return `${Math.round(n)}`;
 }
 
+function scoreOrder(purpose: "buy" | "rent"): (keyof ScoreSet)[] {
+  return purpose === "rent"
+    ? ["price", "location", "transport", "comfort", "listing_trust", "risks"]
+    : ["price", "location", "growth", "liquidity", "environment", "risks"];
+}
+
+function ScoreBar({ label, value }: { label: string; value: number }) {
+  const v = Math.max(0, Math.min(100, Math.round(value)));
+  const tone =
+    v >= 75 ? "bg-verdict-green" : v >= 45 ? "bg-verdict-yellow" : "bg-verdict-red";
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="text-sm text-foreground/85 leading-snug">{label}</div>
+        <div className="text-sm font-semibold tabular-nums">{v}</div>
+      </div>
+      <div className="mt-1.5 h-2 rounded-full bg-secondary overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${v}%` }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className={cn("h-full rounded-full", tone)}
+        />
+      </div>
+    </div>
+  );
+}
+
 function MarketCard({
   market,
   lang,
