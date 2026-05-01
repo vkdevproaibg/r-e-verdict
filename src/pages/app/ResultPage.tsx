@@ -193,6 +193,19 @@ export default function ResultPage() {
                   {t(`analyze.purpose.${result.purpose}`)}
                 </span>
               )}
+              {result.confidence_band && (
+                <span className={cn(
+                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-widest",
+                  result.confidence_band === "high"
+                    ? "bg-verdict-green/10 text-verdict-green border-verdict-green/30"
+                    : result.confidence_band === "medium"
+                    ? "bg-verdict-yellow/10 text-verdict-yellow border-verdict-yellow/30"
+                    : "bg-secondary text-muted-foreground border-border"
+                )}>
+                  <ShieldCheck className="h-3 w-3" />
+                  {t(`result.confidenceBand.${result.confidence_band}`)}
+                </span>
+              )}
             </div>
             <h1 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
               {headline}
