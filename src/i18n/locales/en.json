@@ -225,6 +225,33 @@
     "marketSection": "Market price & trend",
     "trendFlat": "Stable trend",
     "liquidity": "Liquidity",
+    "scoresSection": "Detailed breakdown",
+    "scoresHint": "Higher is better. Scale 0–100.",
+    "confidenceBand": {
+      "low": "low confidence",
+      "medium": "medium confidence",
+      "high": "high confidence"
+    },
+    "scoreLabels": {
+      "price": "Price",
+      "location": "Location",
+      "growth": "Growth potential",
+      "liquidity": "Liquidity",
+      "environment": "Environment & comfort",
+      "risks": "Risks (low = good)",
+      "transport": "Transport",
+      "comfort": "Living comfort",
+      "listing_trust": "Listing reliability"
+    },
+    "good": "What's good",
+    "watch": "What to watch",
+    "sources": "Sources",
+    "sourcesHint": "Public data we leaned on",
+    "priceDeviation": {
+      "above": "above benchmark",
+      "below": "below benchmark",
+      "fair": "in line with market"
+    },
     "reasons": "Why this verdict",
     "redFlags": "Red flags",
     "redFlagsHint": "How to verify",

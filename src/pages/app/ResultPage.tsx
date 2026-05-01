@@ -20,6 +20,10 @@ import {
   Minus,
   Home,
   Building2,
+  ShieldCheck,
+  ExternalLink,
+  ThumbsUp,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -46,15 +50,39 @@ interface MarketBlock {
   gross_yield_pct?: number | null;
 }
 
+interface ScoreSet {
+  price?: number;
+  location?: number;
+  growth?: number;
+  liquidity?: number;
+  environment?: number;
+  risks?: number;
+  transport?: number;
+  comfort?: number;
+  listing_trust?: number;
+}
+
+interface SourceLink {
+  title?: string;
+  url?: string;
+  kind?: string;
+}
+
 interface AIResult {
   verdict: Verdict;
   score: number;
   confidence: number;
+  confidence_band?: "low" | "medium" | "high";
   headline_ru: string;
   headline_en: string;
   reasons: { ru: string; en: string; kind?: string }[];
   red_flags: { ru: string; en: string; severity?: "low" | "medium" | "high" }[];
   next_steps: { ru: string; en: string }[];
+  good?: { ru: string; en: string }[];
+  watch?: { ru: string; en: string }[];
+  sources?: SourceLink[];
+  scores?: ScoreSet;
+  price_deviation_pct?: number | null;
   input_kind?: string;
   query?: string;
   error?: string;
@@ -165,6 +193,19 @@ export default function ResultPage() {
                   {t(`analyze.purpose.${result.purpose}`)}
                 </span>
               )}
+              {result.confidence_band && (
+                <span className={cn(
+                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-widest",
+                  result.confidence_band === "high"
+                    ? "bg-verdict-green/10 text-verdict-green border-verdict-green/30"
+                    : result.confidence_band === "medium"
+                    ? "bg-verdict-yellow/10 text-verdict-yellow border-verdict-yellow/30"
+                    : "bg-secondary text-muted-foreground border-border"
+                )}>
+                  <ShieldCheck className="h-3 w-3" />
+                  {t(`result.confidenceBand.${result.confidence_band}`)}
+                </span>
+              )}
             </div>
             <h1 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
               {headline}
@@ -182,14 +223,27 @@ export default function ResultPage() {
               ) : (
                 <Metric label={t("result.priceVsMarket")} value="—" sub={lang === "ru" ? "нет данных" : "no data"} />
               )}
-              {typeof result.market?.gross_yield_pct === "number" ? (
+              {typeof result.price_deviation_pct === "number" ? (
+                <Metric
+                  label={t("result.priceVsMarket")}
+                  value={`${result.price_deviation_pct > 0 ? "+" : ""}${result.price_deviation_pct.toFixed(0)}%`}
+                  sub={
+                    Math.abs(result.price_deviation_pct) < 5
+                      ? t("result.priceDeviation.fair")
+                      : result.price_deviation_pct > 0
+                      ? t("result.priceDeviation.above")
+                      : t("result.priceDeviation.below")
+                  }
+                  accent
+                />
+              ) : typeof result.market?.gross_yield_pct === "number" ? (
                 <Metric
                   label={lang === "ru" ? "Доходность" : "Yield"}
                   value={`${result.market.gross_yield_pct.toFixed(1)}%`}
                   sub={lang === "ru" ? "годовая" : "annual"}
                 />
               ) : (
-                <Metric label={t("result.liquidity")} value="High" sub="< 60d" />
+                <Metric label={t("result.liquidity")} value="—" sub={lang === "ru" ? "оценка" : "estimate"} />
               )}
             </div>
           </div>
@@ -202,7 +256,88 @@ export default function ResultPage() {
           </Section>
         )}
 
-        {/* Location + 3D view */}
+        {/* Detailed score bars */}
+        {result.scores && (
+          <Section className="lg:col-span-12" title={t("result.scoresSection")}>
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <div className="text-xs text-muted-foreground mb-4">{t("result.scoresHint")}</div>
+              <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
+                {scoreOrder(result.purpose ?? "buy").map((key) => {
+                  const v = result.scores?.[key];
+                  if (typeof v !== "number") return null;
+                  return <ScoreBar key={key} label={t(`result.scoreLabels.${key}`)} value={v} />;
+                })}
+              </div>
+            </div>
+          </Section>
+        )}
+
+        {/* Good / Watch — trust pair */}
+        {(result.good?.length || result.watch?.length) && (
+          <Section className="lg:col-span-12" title={lang === "ru" ? "Сильные и слабые стороны" : "Strengths & concerns"}>
+            <div className="grid md:grid-cols-2 gap-3">
+              {result.good && result.good.length > 0 && (
+                <div className="rounded-2xl border border-verdict-green/30 bg-verdict-green/5 p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ThumbsUp className="h-4 w-4 text-verdict-green" />
+                    <div className="text-sm font-semibold">{t("result.good")}</div>
+                  </div>
+                  <ul className="space-y-2">
+                    {result.good.map((g, i) => (
+                      <li key={i} className="text-sm leading-snug flex gap-2">
+                        <span className="text-verdict-green mt-0.5">+</span>
+                        <span>{lang === "ru" ? g.ru : g.en}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {result.watch && result.watch.length > 0 && (
+                <div className="rounded-2xl border border-verdict-yellow/30 bg-verdict-yellow/5 p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Eye className="h-4 w-4 text-verdict-yellow" />
+                    <div className="text-sm font-semibold">{t("result.watch")}</div>
+                  </div>
+                  <ul className="space-y-2">
+                    {result.watch.map((w, i) => (
+                      <li key={i} className="text-sm leading-snug flex gap-2">
+                        <span className="text-verdict-yellow mt-0.5">!</span>
+                        <span>{lang === "ru" ? w.ru : w.en}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </Section>
+        )}
+
+        {/* Sources */}
+        {result.sources && result.sources.length > 0 && (
+          <Section className="lg:col-span-12" title={t("result.sources")}>
+            <div className="text-xs text-muted-foreground mb-3">{t("result.sourcesHint")}</div>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {result.sources.slice(0, 6).map((s, i) => (
+                <a
+                  key={i}
+                  href={s.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-2xl border border-border bg-card p-3 flex items-start gap-3 hover:border-accent/40 transition-colors group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-secondary grid place-items-center shrink-0 group-hover:bg-accent/10">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium truncate">{s.title || s.url}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{s.url}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </Section>
+        )}
+
         {typeof result.lat === "number" && typeof result.lng === "number" && (
           <Section className="lg:col-span-12" title={lang === "ru" ? "Локация" : "Location"}>
             {result.geo_address && (
@@ -454,6 +589,34 @@ function formatNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 1 : 2)}M`;
   if (n >= 1_000) return `${Math.round(n).toLocaleString("en-US")}`;
   return `${Math.round(n)}`;
+}
+
+function scoreOrder(purpose: "buy" | "rent"): (keyof ScoreSet)[] {
+  return purpose === "rent"
+    ? ["price", "location", "transport", "comfort", "listing_trust", "risks"]
+    : ["price", "location", "growth", "liquidity", "environment", "risks"];
+}
+
+function ScoreBar({ label, value }: { label: string; value: number }) {
+  const v = Math.max(0, Math.min(100, Math.round(value)));
+  const tone =
+    v >= 75 ? "bg-verdict-green" : v >= 45 ? "bg-verdict-yellow" : "bg-verdict-red";
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="text-sm text-foreground/85 leading-snug">{label}</div>
+        <div className="text-sm font-semibold tabular-nums">{v}</div>
+      </div>
+      <div className="mt-1.5 h-2 rounded-full bg-secondary overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${v}%` }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className={cn("h-full rounded-full", tone)}
+        />
+      </div>
+    </div>
+  );
 }
 
 function MarketCard({
