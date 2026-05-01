@@ -20,6 +20,10 @@ import {
   Minus,
   Home,
   Building2,
+  ShieldCheck,
+  ExternalLink,
+  ThumbsUp,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
