@@ -50,15 +50,39 @@ interface MarketBlock {
   gross_yield_pct?: number | null;
 }
 
+interface ScoreSet {
+  price?: number;
+  location?: number;
+  growth?: number;
+  liquidity?: number;
+  environment?: number;
+  risks?: number;
+  transport?: number;
+  comfort?: number;
+  listing_trust?: number;
+}
+
+interface SourceLink {
+  title?: string;
+  url?: string;
+  kind?: string;
+}
+
 interface AIResult {
   verdict: Verdict;
   score: number;
   confidence: number;
+  confidence_band?: "low" | "medium" | "high";
   headline_ru: string;
   headline_en: string;
   reasons: { ru: string; en: string; kind?: string }[];
   red_flags: { ru: string; en: string; severity?: "low" | "medium" | "high" }[];
   next_steps: { ru: string; en: string }[];
+  good?: { ru: string; en: string }[];
+  watch?: { ru: string; en: string }[];
+  sources?: SourceLink[];
+  scores?: ScoreSet;
+  price_deviation_pct?: number | null;
   input_kind?: string;
   query?: string;
   error?: string;
