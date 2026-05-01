@@ -256,7 +256,88 @@ export default function ResultPage() {
           </Section>
         )}
 
-        {/* Location + 3D view */}
+        {/* Detailed score bars */}
+        {result.scores && (
+          <Section className="lg:col-span-12" title={t("result.scoresSection")}>
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <div className="text-xs text-muted-foreground mb-4">{t("result.scoresHint")}</div>
+              <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
+                {scoreOrder(result.purpose ?? "buy").map((key) => {
+                  const v = result.scores?.[key];
+                  if (typeof v !== "number") return null;
+                  return <ScoreBar key={key} label={t(`result.scoreLabels.${key}`)} value={v} />;
+                })}
+              </div>
+            </div>
+          </Section>
+        )}
+
+        {/* Good / Watch — trust pair */}
+        {(result.good?.length || result.watch?.length) && (
+          <Section className="lg:col-span-12" title={lang === "ru" ? "Сильные и слабые стороны" : "Strengths & concerns"}>
+            <div className="grid md:grid-cols-2 gap-3">
+              {result.good && result.good.length > 0 && (
+                <div className="rounded-2xl border border-verdict-green/30 bg-verdict-green/5 p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ThumbsUp className="h-4 w-4 text-verdict-green" />
+                    <div className="text-sm font-semibold">{t("result.good")}</div>
+                  </div>
+                  <ul className="space-y-2">
+                    {result.good.map((g, i) => (
+                      <li key={i} className="text-sm leading-snug flex gap-2">
+                        <span className="text-verdict-green mt-0.5">+</span>
+                        <span>{lang === "ru" ? g.ru : g.en}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {result.watch && result.watch.length > 0 && (
+                <div className="rounded-2xl border border-verdict-yellow/30 bg-verdict-yellow/5 p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Eye className="h-4 w-4 text-verdict-yellow" />
+                    <div className="text-sm font-semibold">{t("result.watch")}</div>
+                  </div>
+                  <ul className="space-y-2">
+                    {result.watch.map((w, i) => (
+                      <li key={i} className="text-sm leading-snug flex gap-2">
+                        <span className="text-verdict-yellow mt-0.5">!</span>
+                        <span>{lang === "ru" ? w.ru : w.en}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </Section>
+        )}
+
+        {/* Sources */}
+        {result.sources && result.sources.length > 0 && (
+          <Section className="lg:col-span-12" title={t("result.sources")}>
+            <div className="text-xs text-muted-foreground mb-3">{t("result.sourcesHint")}</div>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {result.sources.slice(0, 6).map((s, i) => (
+                <a
+                  key={i}
+                  href={s.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-2xl border border-border bg-card p-3 flex items-start gap-3 hover:border-accent/40 transition-colors group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-secondary grid place-items-center shrink-0 group-hover:bg-accent/10">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium truncate">{s.title || s.url}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{s.url}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </Section>
+        )}
+
         {typeof result.lat === "number" && typeof result.lng === "number" && (
           <Section className="lg:col-span-12" title={lang === "ru" ? "Локация" : "Location"}>
             {result.geo_address && (
