@@ -223,14 +223,27 @@ export default function ResultPage() {
               ) : (
                 <Metric label={t("result.priceVsMarket")} value="—" sub={lang === "ru" ? "нет данных" : "no data"} />
               )}
-              {typeof result.market?.gross_yield_pct === "number" ? (
+              {typeof result.price_deviation_pct === "number" ? (
+                <Metric
+                  label={t("result.priceVsMarket")}
+                  value={`${result.price_deviation_pct > 0 ? "+" : ""}${result.price_deviation_pct.toFixed(0)}%`}
+                  sub={
+                    Math.abs(result.price_deviation_pct) < 5
+                      ? t("result.priceDeviation.fair")
+                      : result.price_deviation_pct > 0
+                      ? t("result.priceDeviation.above")
+                      : t("result.priceDeviation.below")
+                  }
+                  accent
+                />
+              ) : typeof result.market?.gross_yield_pct === "number" ? (
                 <Metric
                   label={lang === "ru" ? "Доходность" : "Yield"}
                   value={`${result.market.gross_yield_pct.toFixed(1)}%`}
                   sub={lang === "ru" ? "годовая" : "annual"}
                 />
               ) : (
-                <Metric label={t("result.liquidity")} value="High" sub="< 60d" />
+                <Metric label={t("result.liquidity")} value="—" sub={lang === "ru" ? "оценка" : "estimate"} />
               )}
             </div>
           </div>
