@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider } from "@/state/AppContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { RoleProvider } from "@/state/RoleContext";
+import { BuyerProfileProvider } from "@/state/BuyerProfileContext";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
@@ -17,6 +18,7 @@ import Welcome from "./pages/onboarding/Welcome";
 import RoleSelect from "./pages/onboarding/RoleSelect";
 import GoalSelect from "./pages/onboarding/GoalSelect";
 import Permissions from "./pages/onboarding/Permissions";
+import CalibrateRadar from "./pages/onboarding/CalibrateRadar";
 
 import AppShell from "./pages/app/AppShell";
 import HomePage from "./pages/app/HomePage";
@@ -44,6 +46,7 @@ const App = () => (
     <ThemeProvider>
       <RoleProvider>
         <AppProvider>
+          <BuyerProfileProvider>
           <TooltipProvider>
             <Toaster />
             <Sonner />
@@ -87,6 +90,7 @@ const App = () => (
                 <Route path="/onboarding/role" element={<RoleSelect />} />
                 <Route path="/onboarding/goal" element={<GoalSelect />} />
                 <Route path="/onboarding/permissions" element={<Permissions />} />
+                <Route path="/onboarding/calibrate" element={<CalibrateRadar />} />
 
                 {/* Legacy redirects */}
                 <Route path="/app/map" element={<Navigate to="/app/library" replace />} />
@@ -97,6 +101,7 @@ const App = () => (
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
+          </BuyerProfileProvider>
         </AppProvider>
       </RoleProvider>
     </ThemeProvider>

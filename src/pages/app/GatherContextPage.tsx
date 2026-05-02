@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Loader2, Check } from "lucide-react";
 import { db } from "@/integrations/supabase/db";
 import { useApp } from "@/state/AppContext";
+import { useBuyerProfile } from "@/state/BuyerProfileContext";
 
 const STAGE_KEYS = ["neighborhood", "risks", "zoning", "market", "confidence"] as const;
 
@@ -12,6 +13,7 @@ export default function GatherContextPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { geo } = useApp();
+  const { profile } = useBuyerProfile();
   const { t } = useTranslation();
   const [stage, setStage] = useState(0);
   const startedRef = useRef(false);
@@ -52,6 +54,7 @@ export default function GatherContextPage() {
             lng: useGeo ? geo?.lng : undefined,
             refine,
             purpose,
+            buyer_profile: profile.completedAt ? profile : undefined,
           },
         });
         if (error) throw error;
