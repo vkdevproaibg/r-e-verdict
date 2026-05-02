@@ -135,12 +135,23 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv11";
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter",
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display",
       system-ui, sans-serif;
   }
 
   h1, h2, h3, h4 {
     letter-spacing: -0.02em;
+  }
+
+  .font-serif-display {
+    font-family: "Fraunces", "Cormorant Garamond", "Times New Roman", Georgia, serif;
+    font-feature-settings: "ss01";
+    letter-spacing: -0.025em;
+  }
+  .font-serif-italic {
+    font-family: "Fraunces", "Cormorant Garamond", Georgia, serif;
+    font-style: italic;
+    font-feature-settings: "ss01";
   }
 }
 
