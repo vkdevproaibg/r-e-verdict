@@ -491,13 +491,14 @@ export default function ResultPage() {
             <Button
               variant="secondary"
               className="h-12 rounded-xl"
-              onClick={() => {
+              onClick={async () => {
+                const id = toast.loading(lang === "ru" ? "Готовим PDF…" : "Building PDF…");
                 try {
-                  exportAnalysisPdf(result as never, lang);
-                  toast.success(lang === "ru" ? "PDF готов" : "PDF ready");
+                  await exportAnalysisPdf(result as never, lang);
+                  toast.success(lang === "ru" ? "PDF готов" : "PDF ready", { id });
                 } catch (e) {
                   console.error(e);
-                  toast.error(lang === "ru" ? "Не удалось создать PDF" : "Failed to generate PDF");
+                  toast.error(lang === "ru" ? "Не удалось создать PDF" : "Failed to generate PDF", { id });
                 }
               }}
             >
