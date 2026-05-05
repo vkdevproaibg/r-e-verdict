@@ -773,62 +773,117 @@ function Step10({ onPick }: { onPick: (a: AgentRole) => void }) {
 }
 
 /* ======================================================================== */
-/*  Step 12 — Paywall / unlock                                              */
+/*  Step 12 — Premium reveal (no paywall, simulation only)                  */
 /* ======================================================================== */
 
 function Step12({ address, onUnlock }: { address: string; onUnlock: () => void }) {
   return (
     <div className="space-y-7">
-      <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-charcoal grid place-items-center">
+      {/* Premium hero plate */}
+      <div className="relative h-52 rounded-3xl overflow-hidden bg-gradient-charcoal">
+        {/* subtle grid */}
+        <div
+          className="absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              "linear-gradient(hsl(var(--accent)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent)) 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+          }}
+        />
+        {/* radial glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--accent)/0.25),transparent_60%)]" />
+        {/* concentric rings */}
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            initial={{ scale: 0.4, opacity: 0.5 }}
+            animate={{ scale: 1.4, opacity: 0 }}
+            transition={{ duration: 3, repeat: Infinity, delay: i * 0.9, ease: "easeOut" }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 rounded-full border border-accent/40"
+          />
+        ))}
         <motion.div
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
+          transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+          className="absolute inset-0 grid place-items-center"
         >
-          <div className="h-14 w-14 rounded-2xl bg-gradient-bronze shadow-bronze grid place-items-center mx-auto">
-            <Check className="h-7 w-7 text-accent-foreground" />
-          </div>
-          <div className="mt-3 text-[10px] uppercase tracking-widest text-background/70">
-            Калибровка завершена
+          <div className="text-center">
+            <div className="relative mx-auto h-16 w-16">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-bronze shadow-bronze" />
+              <div className="absolute inset-0 grid place-items-center">
+                <Check className="h-8 w-8 text-accent-foreground" strokeWidth={2.5} />
+              </div>
+            </div>
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-background/10 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-background/80 border border-background/15">
+              <Sparkles className="h-3 w-3 text-accent" />
+              Premium analysis ready
+            </div>
           </div>
         </motion.div>
       </div>
 
       <StepHeader
-        eyebrow="Готово"
+        eyebrow="Профиль откалиброван"
         title={
           <>
-            Ваш профиль{" "}
-            <span className="font-serif-italic text-accent">идеально совпадает</span> с объектом{" "}
+            Радар настроен{" "}
+            <span className="font-serif-italic text-accent">именно под вас</span> и готов к{" "}
             <span className="font-serif-italic">{address}</span>.
           </>
         }
-        sub="НО мы нашли 2 критических фактора, которые вам нужно знать перед принятием решения."
+        sub="Мы взвесили ваши приоритеты, бюджет и страхи — и сложили их в персональный вердикт по объекту."
       />
 
-      <div className="rounded-2xl border border-accent/30 bg-accent/5 p-4 space-y-2.5">
+      {/* Trust grid */}
+      <div className="grid grid-cols-3 gap-2">
         {[
-          "Полный вердикт по объекту",
-          "Разбор 2 критических факторов",
-          "Сравнение с рынком и комплами",
+          { k: "12", label: "сигналов проанализировано" },
+          { k: "6", label: "источников рынка" },
+          { k: "100%", label: "под ваш профиль" },
+        ].map((s) => (
+          <div
+            key={s.label}
+            className="rounded-2xl border border-border bg-card/70 backdrop-blur p-3 text-center"
+          >
+            <div className="font-serif-display text-2xl text-foreground tabular-nums">
+              {s.k}
+            </div>
+            <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground leading-tight">
+              {s.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* What's inside */}
+      <div className="rounded-2xl border border-border bg-card p-4 space-y-3 shadow-soft">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          Что внутри отчёта
+        </div>
+        {[
+          "Персональный вердикт под ваш сценарий",
+          "Сравнение с рынком и комплами в районе",
+          "Карта рисков, отсортированная по вашему страху",
         ].map((line) => (
-          <div key={line} className="flex items-center gap-2.5 text-[13px]">
-            <Lock className="h-3.5 w-3.5 text-accent shrink-0" />
-            <span className="text-foreground/80">{line}</span>
+          <div key={line} className="flex items-start gap-2.5 text-[13px]">
+            <div className="mt-0.5 h-4 w-4 rounded-full bg-accent/15 grid place-items-center shrink-0">
+              <Check className="h-2.5 w-2.5 text-accent" />
+            </div>
+            <span className="text-foreground/85 leading-relaxed">{line}</span>
           </div>
         ))}
       </div>
 
       <Button
         onClick={onUnlock}
-        className="w-full h-14 rounded-2xl bg-gradient-bronze text-accent-foreground shadow-bronze hover:opacity-90 text-base font-semibold animate-[pulse_2.4s_ease-in-out_infinite]"
+        className="w-full h-14 rounded-2xl bg-gradient-bronze text-accent-foreground shadow-bronze hover:opacity-95 text-base font-semibold tracking-tight"
       >
-        Открыть полный отчёт
+        Открыть мой отчёт
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
       <p className="text-center text-[11px] text-muted-foreground">
-        Бесплатно для первого отчёта · Без карты
+        Полный доступ · без оплаты · ранний премиум-режим
       </p>
     </div>
   );
