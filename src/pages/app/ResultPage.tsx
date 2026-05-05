@@ -491,7 +491,15 @@ export default function ResultPage() {
             <Button
               variant="secondary"
               className="h-12 rounded-xl"
-              onClick={() => toast.info(lang === "ru" ? "PDF экспорт скоро" : "PDF export coming soon")}
+              onClick={() => {
+                try {
+                  exportAnalysisPdf(result as never, lang);
+                  toast.success(lang === "ru" ? "PDF готов" : "PDF ready");
+                } catch (e) {
+                  console.error(e);
+                  toast.error(lang === "ru" ? "Не удалось создать PDF" : "Failed to generate PDF");
+                }
+              }}
             >
               <FileDown className="h-4 w-4 mr-2" /> {t("result.actions.export")}
             </Button>
