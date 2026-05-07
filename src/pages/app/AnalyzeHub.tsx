@@ -291,7 +291,12 @@ function MethodCard({
         wide && "w-full"
       )}
     >
-      <div className="flex items-start gap-4">
+      <div className={cn(
+        "gap-3",
+        large || wide
+          ? "flex items-start gap-4"
+          : "flex flex-col items-start sm:flex-row sm:items-start sm:gap-4"
+      )}>
         <div
           className={cn(
             "rounded-2xl grid place-items-center shrink-0",
@@ -300,15 +305,17 @@ function MethodCard({
         >
           <Icon className={cn(large || primary ? "h-5 w-5 text-accent-foreground" : "h-5 w-5 text-foreground")} />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className={cn("font-semibold tracking-tight leading-tight", large ? "text-lg" : "text-base")}>
+        <div className="flex-1 min-w-0 w-full">
+          <div className={cn("font-semibold tracking-tight leading-tight break-words", large ? "text-lg" : "text-[15px]")}>
             {t(`analyze.methods.${key}.title`)}
           </div>
-          <div className="mt-1 text-xs text-muted-foreground leading-relaxed">
+          <div className="mt-1 text-xs text-muted-foreground leading-relaxed break-words">
             {t(`analyze.methods.${key}.desc`)}
           </div>
         </div>
-        <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all mt-1" />
+        {(large || wide) && (
+          <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all mt-1" />
+        )}
       </div>
     </motion.button>
   );
