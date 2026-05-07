@@ -10,28 +10,28 @@
 
 @layer base {
   :root {
-    /* Surfaces */
-    --background: 36 33% 97%;          /* off-white #F8F5F0 */
-    --foreground: 220 13% 13%;         /* charcoal #1F2126 */
+    /* Surfaces — ivory / stone, calm warm premium */
+    --background: 38 28% 96%;          /* ivory #F7F4EE */
+    --foreground: 222 18% 14%;         /* deep graphite */
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 13%;
+    --card: 40 30% 99%;                /* near-white ivory */
+    --card-foreground: 222 18% 14%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 13%;
+    --popover: 40 30% 99%;
+    --popover-foreground: 222 18% 14%;
 
-    /* Brand */
-    --primary: 220 14% 16%;            /* deep charcoal */
-    --primary-foreground: 36 33% 97%;
+    /* Brand — graphite primary, champagne bronze accent (muted) */
+    --primary: 222 18% 16%;            /* graphite */
+    --primary-foreground: 38 28% 97%;
 
-    --accent: 28 45% 48%;              /* warm bronze */
-    --accent-foreground: 36 33% 97%;
+    --accent: 30 32% 52%;              /* champagne bronze, desaturated */
+    --accent-foreground: 38 30% 98%;
 
-    --secondary: 36 20% 92%;
-    --secondary-foreground: 220 13% 13%;
+    --secondary: 36 16% 93%;           /* warm stone */
+    --secondary-foreground: 222 18% 14%;
 
-    --muted: 36 18% 94%;
-    --muted-foreground: 220 8% 42%;
+    --muted: 36 14% 95%;
+    --muted-foreground: 222 8% 44%;
 
     --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 100%;
