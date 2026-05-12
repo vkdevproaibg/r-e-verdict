@@ -23,6 +23,7 @@ import CalibrateRadar from "./pages/onboarding/CalibrateRadar";
 import AppShell from "./pages/app/AppShell";
 import HomePage from "./pages/app/HomePage";
 import AnalyzeHub from "./pages/app/AnalyzeHub";
+import SourcesBrowser from "./pages/app/SourcesBrowser";
 import GatherContextPage from "./pages/app/GatherContextPage";
 import RefinePage from "./pages/app/RefinePage";
 import InsufficientDataPage from "./pages/app/InsufficientDataPage";
@@ -62,6 +63,7 @@ const App = () => (
                 <Route path="/app" element={<AppShell />}>
                   <Route index element={<HomePage />} />
                   <Route path="analyze" element={<AnalyzeHub />} />
+                  <Route path="analyze/sources" element={<SourcesBrowser />} />
                   <Route path="refine" element={<RefinePage />} />
                   <Route path="library" element={<LibraryPage />} />
                   <Route path="compare" element={<ComparePage />} />

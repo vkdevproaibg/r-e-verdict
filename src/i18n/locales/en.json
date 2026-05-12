@@ -162,24 +162,25 @@
       "address": { "title": "Type an address", "desc": "Most accurate — we know the neighborhood" },
       "location": { "title": "Use my location", "desc": "Analyze right where you are" },
       "url": { "title": "Paste a listing URL", "desc": "Zillow, Redfin, Bayut…" },
-      "photo": { "title": "Upload photos", "desc": "Façade, interior, documents" },
       "voice": { "title": "Voice", "desc": "Describe out loud" },
       "manual": { "title": "Manual entry", "desc": "Address, price, key facts" },
-      "document": { "title": "Upload documents", "desc": "Deep dive on contracts & disclosures" }
+      "document": { "title": "Upload documents", "desc": "Deep dive on contracts & disclosures" },
+      "sources": { "title": "Browse from sources", "desc": "Zillow, Redfin, Bayut and more — pick listings straight from the feed" }
     },
     "start": "Start analysis",
-    "photo": {
-      "uploadLabel": "Drop photos here",
-      "uploadHint": "Upload coming next iteration",
-      "whyAddress": "Address required",
-      "whyAddressBody": "A photo alone can't tell us WHERE the property is. Add an address or use your location — otherwise the verdict would be guesswork.",
-      "addressPlaceholder": "e.g. 123 Main St, Brooklyn NY",
-      "addressRequired": "Enter an address or enable location",
-      "geoRequired": "Location is required for this mode",
-      "geoRequesting": "Requesting permission…",
-      "or": "or",
-      "useGeo": "Use my current location",
-      "geoOn": "Location captured"
+    "sources": {
+      "title": "Property sources",
+      "sub": "Pick a listing straight from popular portals and agency feeds. One to analyze, two to compare.",
+      "pickSource": "Source",
+      "openOriginal": "Open original",
+      "selectedOne": "1 listing selected",
+      "selectedTwo": "2 listings selected",
+      "analyzeOne": "Analyze this listing",
+      "compareTwo": "Compare these listings",
+      "limit": "Pick at most 2 listings",
+      "comingSoonHint": "Sites block in-app embedding, so the original opens in a new tab. Here is a curated feed you can launch analysis from.",
+      "feedTitle": "Curated feed for analysis",
+      "tapToSelect": "Tap a card to select"
     }
   },
   "gather": {
