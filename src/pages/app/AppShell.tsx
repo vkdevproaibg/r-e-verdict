@@ -187,6 +187,31 @@ function SidebarLink({ to, label, Icon, end, primary }: NavItem) {
   );
 }
 
+function RoleSwitcherPill({ role, setRole }: { role: AppRole; setRole: (r: AppRole) => void }) {
+  const { t } = useTranslation();
+  return (
+    <div
+      className="hidden sm:inline-flex items-center rounded-full border border-border bg-card p-0.5 shadow-sm"
+      title={t("role.switch")}
+    >
+      {(["buyer", "agent"] as const).map((r) => (
+        <button
+          key={r}
+          onClick={() => setRole(r)}
+          className={cn(
+            "h-7 px-3 rounded-full text-[11px] font-semibold tracking-wide transition-all",
+            role === r
+              ? "bg-gradient-bronze text-accent-foreground shadow-bronze"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {t(`role.${r}`)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function RoleBadge({ role }: { role: AppRole }) {
   const { t } = useTranslation();
   return (
