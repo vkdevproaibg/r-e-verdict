@@ -85,6 +85,7 @@ export default function AppShell() {
               <PageTitle pathname={location.pathname} />
             </div>
             <div className="flex items-center gap-2">
+              <RoleSwitcherPill role={role} setRole={setRole} />
               <LanguageToggle compact />
               <ThemeToggle />
               <UserMenu role={role} setRole={setRole} />
