@@ -29,6 +29,18 @@ function readRole(): AppRole {
 export function RoleProvider({ children }: { children: ReactNode }) {
   const [role, setRoleState] = useState<AppRole>(readRole);
 
+  const setRole = (next: AppRole) => {
+    setRoleState(next);
+    try {
+      localStorage.setItem(KEY, next);
+      const raw = localStorage.getItem(APP_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      localStorage.setItem(APP_KEY, JSON.stringify({ ...parsed, role: next }));
+    } catch {
+      /* ignore */
+    }
+  };
+
   useEffect(() => {
     localStorage.setItem(KEY, role);
   }, [role]);
@@ -51,7 +63,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <RoleCtx.Provider value={{ role, setRole: setRoleState }}>
+    <RoleCtx.Provider value={{ role, setRole }}>
       {children}
     </RoleCtx.Provider>
   );
