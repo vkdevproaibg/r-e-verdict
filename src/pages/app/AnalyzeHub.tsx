@@ -28,6 +28,7 @@ export default function AnalyzeHub() {
   const [active, setActive] = useState<Method | null>(null);
   const [text, setText] = useState("");
   const [purpose, setPurpose] = useState<"buy" | "rent">("buy");
+  const [area, setArea] = useState("");
 
   const start = (kind: string, q?: string) => {
     setActive(null);
@@ -36,12 +37,16 @@ export default function AnalyzeHub() {
     params.set("kind", kind);
     if (q) params.set("q", q);
     params.set("purpose", purpose);
+    if (area.trim()) params.set("area", area.trim());
     navigate(`/app/analyze/loading?${params.toString()}`);
   };
 
   const onPick = async (m: Method) => {
     if (m === "sources") {
-      navigate(`/app/analyze/sources?purpose=${purpose}`);
+      const sp = new URLSearchParams();
+      sp.set("purpose", purpose);
+      if (area.trim()) sp.set("area", area.trim());
+      navigate(`/app/analyze/sources?${sp.toString()}`);
       return;
     }
     if (m === "location") {
