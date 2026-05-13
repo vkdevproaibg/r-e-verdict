@@ -28,6 +28,7 @@ export default function AnalyzeHub() {
   const [active, setActive] = useState<Method | null>(null);
   const [text, setText] = useState("");
   const [purpose, setPurpose] = useState<"buy" | "rent">("buy");
+  const [area, setArea] = useState("");
 
   const start = (kind: string, q?: string) => {
     setActive(null);
@@ -36,12 +37,16 @@ export default function AnalyzeHub() {
     params.set("kind", kind);
     if (q) params.set("q", q);
     params.set("purpose", purpose);
+    if (area.trim()) params.set("area", area.trim());
     navigate(`/app/analyze/loading?${params.toString()}`);
   };
 
   const onPick = async (m: Method) => {
     if (m === "sources") {
-      navigate(`/app/analyze/sources?purpose=${purpose}`);
+      const sp = new URLSearchParams();
+      sp.set("purpose", purpose);
+      if (area.trim()) sp.set("area", area.trim());
+      navigate(`/app/analyze/sources?${sp.toString()}`);
       return;
     }
     if (m === "location") {
@@ -76,25 +81,37 @@ export default function AnalyzeHub() {
         <p className="mt-2 text-base text-muted-foreground max-w-2xl">{t("analyze.sub")}</p>
       </motion.div>
 
-      {/* Purpose selector */}
-      <div className="mt-6">
-        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t("analyze.purpose.label")}</div>
-        <div className="inline-flex rounded-2xl border border-border bg-card p-1">
-          {(["buy", "rent"] as const).map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPurpose(p)}
-              className={cn(
-                "px-4 h-10 rounded-xl text-sm font-medium transition-all",
-                purpose === p
-                  ? "bg-gradient-bronze text-accent-foreground shadow-bronze"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {t(`analyze.purpose.${p}`)}
-            </button>
-          ))}
+      {/* Purpose + area selector */}
+      <div className="mt-6 flex flex-wrap items-end gap-4">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t("analyze.purpose.label")}</div>
+          <div className="inline-flex rounded-2xl border border-border bg-card p-1">
+            {(["buy", "rent"] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPurpose(p)}
+                className={cn(
+                  "px-4 h-10 rounded-xl text-sm font-medium transition-all",
+                  purpose === p
+                    ? "bg-gradient-bronze text-accent-foreground shadow-bronze"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t(`analyze.purpose.${p}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="min-w-[160px]">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t("refine.area")}</div>
+          <Input
+            value={area}
+            onChange={(e) => setArea(e.target.value.replace(/[^\d.,]/g, ""))}
+            inputMode="decimal"
+            placeholder="80"
+            className="h-10 rounded-xl"
+          />
         </div>
       </div>
 

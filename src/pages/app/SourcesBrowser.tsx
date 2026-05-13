@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, ExternalLink, Check, GitCompare, Sparkles, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -103,8 +104,11 @@ export default function SourcesBrowser() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const purpose = (params.get("purpose") as "buy" | "rent") || "buy";
+  const initialPurpose = (params.get("purpose") as "buy" | "rent") || "buy";
+  const initialArea = params.get("area") ?? "";
 
+  const [purpose, setPurpose] = useState<"buy" | "rent">(initialPurpose);
+  const [area, setArea] = useState<string>(initialArea);
   const [sourceId, setSourceId] = useState<string>(SOURCES[0].id);
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -122,28 +126,28 @@ export default function SourcesBrowser() {
     });
   };
 
+  const buildParams = (q: string, compareWith?: string) => {
+    const p = new URLSearchParams();
+    p.set("kind", "url");
+    p.set("q", q);
+    p.set("purpose", purpose);
+    if (area.trim()) p.set("area", area.trim());
+    if (compareWith) p.set("compareWith", compareWith);
+    return p;
+  };
+
   const launch = () => {
     if (selected.length === 0) return;
     const picked = selected
       .map((id) => listings.find((l) => l.id === id))
       .filter(Boolean) as Listing[];
     if (picked.length === 1) {
-      const p = new URLSearchParams();
-      p.set("kind", "url");
-      p.set("q", picked[0].url);
-      p.set("purpose", purpose);
-      navigate(`/app/analyze/loading?${p.toString()}`);
+      navigate(`/app/analyze/loading?${buildParams(picked[0].url).toString()}`);
       return;
     }
-    // Two selected → run first, queue second for compare
     sessionStorage.setItem("propaai_compare_queue", JSON.stringify(picked.map((p) => p.url)));
     toast.success(t("analyze.sources.compareTwo") + " · " + picked[0].title + " + " + picked[1].title);
-    const p = new URLSearchParams();
-    p.set("kind", "url");
-    p.set("q", picked[0].url);
-    p.set("purpose", purpose);
-    p.set("compareWith", picked[1].url);
-    navigate(`/app/analyze/loading?${p.toString()}`);
+    navigate(`/app/analyze/loading?${buildParams(picked[0].url, picked[1].url).toString()}`);
   };
 
   return (
@@ -167,6 +171,40 @@ export default function SourcesBrowser() {
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">{t("analyze.sources.title")}</h1>
         <p className="mt-2 text-base text-muted-foreground max-w-2xl">{t("analyze.sources.sub")}</p>
       </motion.div>
+
+      {/* Purpose + area */}
+      <div className="mt-5 flex flex-wrap items-end gap-4">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t("analyze.purpose.label")}</div>
+          <div className="inline-flex rounded-2xl border border-border bg-card p-1">
+            {(["buy", "rent"] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPurpose(p)}
+                className={cn(
+                  "px-4 h-10 rounded-xl text-sm font-medium transition-all",
+                  purpose === p
+                    ? "bg-gradient-bronze text-accent-foreground shadow-bronze"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t(`analyze.purpose.${p}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="min-w-[160px]">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t("refine.area")}</div>
+          <Input
+            value={area}
+            onChange={(e) => setArea(e.target.value.replace(/[^\d.,]/g, ""))}
+            inputMode="decimal"
+            placeholder="80"
+            className="h-10 rounded-xl"
+          />
+        </div>
+      </div>
 
       <div className="mt-6 grid lg:grid-cols-[260px_1fr] gap-6">
         {/* Source picker */}
