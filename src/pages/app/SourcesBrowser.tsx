@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, ExternalLink, Check, GitCompare, Sparkles, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
