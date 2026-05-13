@@ -103,8 +103,11 @@ export default function SourcesBrowser() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const purpose = (params.get("purpose") as "buy" | "rent") || "buy";
+  const initialPurpose = (params.get("purpose") as "buy" | "rent") || "buy";
+  const initialArea = params.get("area") ?? "";
 
+  const [purpose, setPurpose] = useState<"buy" | "rent">(initialPurpose);
+  const [area, setArea] = useState<string>(initialArea);
   const [sourceId, setSourceId] = useState<string>(SOURCES[0].id);
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -122,28 +125,28 @@ export default function SourcesBrowser() {
     });
   };
 
+  const buildParams = (q: string, compareWith?: string) => {
+    const p = new URLSearchParams();
+    p.set("kind", "url");
+    p.set("q", q);
+    p.set("purpose", purpose);
+    if (area.trim()) p.set("area", area.trim());
+    if (compareWith) p.set("compareWith", compareWith);
+    return p;
+  };
+
   const launch = () => {
     if (selected.length === 0) return;
     const picked = selected
       .map((id) => listings.find((l) => l.id === id))
       .filter(Boolean) as Listing[];
     if (picked.length === 1) {
-      const p = new URLSearchParams();
-      p.set("kind", "url");
-      p.set("q", picked[0].url);
-      p.set("purpose", purpose);
-      navigate(`/app/analyze/loading?${p.toString()}`);
+      navigate(`/app/analyze/loading?${buildParams(picked[0].url).toString()}`);
       return;
     }
-    // Two selected → run first, queue second for compare
     sessionStorage.setItem("propaai_compare_queue", JSON.stringify(picked.map((p) => p.url)));
     toast.success(t("analyze.sources.compareTwo") + " · " + picked[0].title + " + " + picked[1].title);
-    const p = new URLSearchParams();
-    p.set("kind", "url");
-    p.set("q", picked[0].url);
-    p.set("purpose", purpose);
-    p.set("compareWith", picked[1].url);
-    navigate(`/app/analyze/loading?${p.toString()}`);
+    navigate(`/app/analyze/loading?${buildParams(picked[0].url, picked[1].url).toString()}`);
   };
 
   return (
