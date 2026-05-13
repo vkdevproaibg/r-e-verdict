@@ -172,6 +172,40 @@ export default function SourcesBrowser() {
         <p className="mt-2 text-base text-muted-foreground max-w-2xl">{t("analyze.sources.sub")}</p>
       </motion.div>
 
+      {/* Purpose + area */}
+      <div className="mt-5 flex flex-wrap items-end gap-4">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t("analyze.purpose.label")}</div>
+          <div className="inline-flex rounded-2xl border border-border bg-card p-1">
+            {(["buy", "rent"] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPurpose(p)}
+                className={cn(
+                  "px-4 h-10 rounded-xl text-sm font-medium transition-all",
+                  purpose === p
+                    ? "bg-gradient-bronze text-accent-foreground shadow-bronze"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t(`analyze.purpose.${p}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="min-w-[160px]">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t("refine.area")}</div>
+          <Input
+            value={area}
+            onChange={(e) => setArea(e.target.value.replace(/[^\d.,]/g, ""))}
+            inputMode="decimal"
+            placeholder="80"
+            className="h-10 rounded-xl"
+          />
+        </div>
+      </div>
+
       <div className="mt-6 grid lg:grid-cols-[260px_1fr] gap-6">
         {/* Source picker */}
         <aside>
