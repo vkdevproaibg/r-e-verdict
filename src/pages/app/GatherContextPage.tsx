@@ -21,11 +21,13 @@ export default function GatherContextPage() {
   const kind = params.get("kind") ?? "text";
   const q = params.get("q") ?? "";
   const purpose = (params.get("purpose") === "rent" ? "rent" : "buy") as "buy" | "rent";
+  const areaParam = params.get("area") ?? "";
   const refineParam = params.get("refine");
   let refine: Record<string, string> = {};
   if (refineParam) {
     try { refine = JSON.parse(decodeURIComponent(refineParam)); } catch { /* ignore */ }
   }
+  if (areaParam && !refine.area) refine.area = areaParam;
 
   useEffect(() => {
     const t = setInterval(
