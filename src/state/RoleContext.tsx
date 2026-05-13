@@ -63,7 +63,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <RoleCtx.Provider value={{ role, setRole: setRoleState }}>
+    <RoleCtx.Provider value={{ role, setRole }}>
       {children}
     </RoleCtx.Provider>
   );
