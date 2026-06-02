@@ -656,10 +656,18 @@ export default function ResultPage() {
             <SheetTitle>{t("result.agentTools")}</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-3 max-w-2xl mx-auto">
+            {result.agent_script?.client_message_ru && (
+              <ToolCard
+                title={t("result.agent.clientMessage")}
+                text={(lang === "ru" ? result.agent_script.client_message_ru : result.agent_script.client_message_en) || ""}
+              />
+            )}
             <ToolCard title={lang === "ru" ? "Питч за 30 секунд" : "30-second pitch"} text={pitchText} />
             <ToolCard
-              title={lang === "ru" ? "Рычаги торга" : "Negotiation levers"}
-              text={(result.red_flags ?? []).map((r) => `• ${lang === "ru" ? r.ru : r.en}`).join("\n") || (lang === "ru" ? "Сильных рычагов нет — объект ликвиден." : "No strong levers — property is liquid.")}
+              title={t("result.agent.talkingPoints")}
+              text={(result.negotiation?.arguments ?? []).map((a) => `• ${lang === "ru" ? a.ru : a.en}`).join("\n") ||
+                (result.red_flags ?? []).map((r) => `• ${lang === "ru" ? r.ru : r.en}`).join("\n") ||
+                (lang === "ru" ? "Сильных рычагов нет — объект ликвиден." : "No strong levers — property is liquid.")}
             />
             <ToolCard
               title={lang === "ru" ? "Ответы на возражения" : "Objection killer"}
