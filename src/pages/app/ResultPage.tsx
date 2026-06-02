@@ -612,21 +612,39 @@ export default function ResultPage() {
               <Phone className="h-4 w-4 mr-2" /> {t("result.actions.talk")}
             </Button>
           ) : (
-            <div className="mt-3 grid sm:grid-cols-2 gap-2">
+            <>
+              <div className="mt-3 grid sm:grid-cols-2 gap-2">
+                <Button
+                  className="h-12 rounded-xl bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze justify-start font-semibold"
+                  onClick={() => toast.info(lang === "ru" ? "Откройте «Клиенты»" : "Open Clients tab")}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" /> {t("result.actions.assign")}
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="h-12 rounded-xl justify-start"
+                  onClick={() => setSalesOpen(true)}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" /> {t("result.agentTools")}
+                </Button>
+              </div>
               <Button
-                className="h-12 rounded-xl bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze justify-start font-semibold"
-                onClick={() => toast.info(lang === "ru" ? "Откройте «Клиенты»" : "Open Clients tab")}
+                variant="outline"
+                className="w-full h-12 rounded-xl mt-2 justify-start"
+                onClick={async () => {
+                  const url = `${window.location.origin}/share/${id}`;
+                  if (id) sessionStorage.setItem(`propaai_share_${id}`, JSON.stringify(result));
+                  try {
+                    await navigator.clipboard.writeText(url);
+                    toast.success(t("result.agent.packDone"));
+                  } catch {
+                    toast.info(url);
+                  }
+                }}
               >
-                <UserPlus className="h-4 w-4 mr-2" /> {t("result.actions.assign")}
+                <FileDown className="h-4 w-4 mr-2" /> {t("result.agent.clientPack")}
               </Button>
-              <Button
-                variant="secondary"
-                className="h-12 rounded-xl justify-start"
-                onClick={() => setSalesOpen(true)}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" /> {t("result.agentTools")}
-              </Button>
-            </div>
+            </>
           )}
         </Section>
       </div>
