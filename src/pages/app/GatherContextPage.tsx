@@ -7,7 +7,7 @@ import { db } from "@/integrations/supabase/db";
 import { useApp } from "@/state/AppContext";
 import { useBuyerProfile } from "@/state/BuyerProfileContext";
 
-const STAGE_KEYS = ["neighborhood", "risks", "zoning", "market", "confidence"] as const;
+const STAGE_KEYS = ["reading", "signals", "comparing", "fairPrice", "risks", "verdict"] as const;
 
 export default function GatherContextPage() {
   const [params] = useSearchParams();

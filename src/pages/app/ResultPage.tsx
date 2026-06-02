@@ -69,6 +69,36 @@ interface SourceLink {
   kind?: string;
 }
 
+interface PriceProof {
+  asking_price?: number | null;
+  fair_price_min?: number;
+  fair_price_max?: number;
+  price_difference_percent?: number | null;
+  verdict_label_ru?: string;
+  verdict_label_en?: string;
+}
+
+interface CompSignal {
+  area_ru?: string;
+  area_en?: string;
+  price_per_unit?: number;
+  unit?: "sqm" | "sqft";
+  currency?: string;
+  similarity_ru?: string;
+  similarity_en?: string;
+  why_ru?: string;
+  why_en?: string;
+}
+
+interface Negotiation {
+  suggested_first_offer?: number;
+  deal_zone_min?: number;
+  deal_zone_max?: number;
+  upper_limit?: number;
+  currency?: string;
+  arguments?: { ru: string; en: string; kind?: string }[];
+}
+
 interface AIResult {
   verdict: Verdict;
   score: number;
@@ -92,6 +122,11 @@ interface AIResult {
   geo_address?: string;
   purpose?: "buy" | "rent";
   market?: MarketBlock;
+  price_proof?: PriceProof;
+  comparable_signals?: CompSignal[];
+  negotiation?: Negotiation;
+  manual_checks?: { ru: string; en: string }[];
+  agent_script?: { client_message_ru?: string; client_message_en?: string };
 }
 
 const verdictTokens: Record<Verdict, { bg: string; text: string; ring: string; dot: string }> = {
@@ -256,6 +291,52 @@ export default function ResultPage() {
             <MarketCard market={result.market} lang={lang} t={t} />
           </Section>
         )}
+
+        {/* Price proof — asking vs fair range */}
+        {result.price_proof && (result.price_proof.fair_price_min || result.price_proof.asking_price) && (
+          <Section className="lg:col-span-12" title={t("result.priceProof.title")}>
+            <PriceProofCard pp={result.price_proof} lang={lang} t={t} />
+          </Section>
+        )}
+
+        {/* Comparable signals */}
+        {result.comparable_signals && result.comparable_signals.length > 0 && (
+          <Section className="lg:col-span-12" title={t("result.comps.title")}>
+            <div className="text-xs text-muted-foreground mb-3">{t("result.comps.sub")}</div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {result.comparable_signals.slice(0, 3).map((c, i) => (
+                <div key={i} className="rounded-2xl border border-border bg-card p-5">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {lang === "ru" ? c.similarity_ru : c.similarity_en}
+                  </div>
+                  <div className="mt-1.5 text-base font-semibold leading-snug">
+                    {lang === "ru" ? c.area_ru : c.area_en}
+                  </div>
+                  {typeof c.price_per_unit === "number" && (
+                    <div className="mt-3 text-xl font-semibold tabular-nums">
+                      {formatNum(c.price_per_unit)}{" "}
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {c.currency ?? ""}/{c.unit === "sqft" ? "sqft" : "м²"}
+                      </span>
+                    </div>
+                  )}
+                  <p className="mt-3 text-xs text-foreground/75 leading-relaxed">
+                    {lang === "ru" ? c.why_ru : c.why_en}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Negotiation position */}
+        {result.negotiation && typeof result.negotiation.suggested_first_offer === "number" && (
+          <Section className="lg:col-span-12" title={t("result.negotiation.title")}>
+            <NegotiationCard n={result.negotiation} lang={lang} t={t} />
+          </Section>
+        )}
+
+
 
         {/* Detailed score bars */}
         {result.scores && (
@@ -458,6 +539,22 @@ export default function ResultPage() {
           </Section>
         )}
 
+        {/* Manual checks */}
+        {result.manual_checks && result.manual_checks.length > 0 && (
+          <Section className="lg:col-span-12" title={t("result.manualChecks.title")}>
+            <div className="text-xs text-muted-foreground mb-3">{t("result.manualChecks.sub")}</div>
+            <ul className="grid sm:grid-cols-2 gap-2">
+              {result.manual_checks.map((m, i) => (
+                <li key={i} className="rounded-2xl bg-card border border-border p-4 flex gap-3">
+                  <ShieldCheck className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="text-sm leading-snug">{lang === "ru" ? m.ru : m.en}</div>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+
         {/* Next steps */}
         {result.next_steps?.length > 0 && (
           <Section className="lg:col-span-12" title={t("result.nextSteps")}>
@@ -515,21 +612,39 @@ export default function ResultPage() {
               <Phone className="h-4 w-4 mr-2" /> {t("result.actions.talk")}
             </Button>
           ) : (
-            <div className="mt-3 grid sm:grid-cols-2 gap-2">
+            <>
+              <div className="mt-3 grid sm:grid-cols-2 gap-2">
+                <Button
+                  className="h-12 rounded-xl bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze justify-start font-semibold"
+                  onClick={() => toast.info(lang === "ru" ? "Откройте «Клиенты»" : "Open Clients tab")}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" /> {t("result.actions.assign")}
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="h-12 rounded-xl justify-start"
+                  onClick={() => setSalesOpen(true)}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" /> {t("result.agentTools")}
+                </Button>
+              </div>
               <Button
-                className="h-12 rounded-xl bg-gradient-bronze text-accent-foreground hover:opacity-90 shadow-bronze justify-start font-semibold"
-                onClick={() => toast.info(lang === "ru" ? "Откройте «Клиенты»" : "Open Clients tab")}
+                variant="outline"
+                className="w-full h-12 rounded-xl mt-2 justify-start"
+                onClick={async () => {
+                  const url = `${window.location.origin}/share/${id}`;
+                  if (id) sessionStorage.setItem(`propaai_share_${id}`, JSON.stringify(result));
+                  try {
+                    await navigator.clipboard.writeText(url);
+                    toast.success(t("result.agent.packDone"));
+                  } catch {
+                    toast.info(url);
+                  }
+                }}
               >
-                <UserPlus className="h-4 w-4 mr-2" /> {t("result.actions.assign")}
+                <FileDown className="h-4 w-4 mr-2" /> {t("result.agent.clientPack")}
               </Button>
-              <Button
-                variant="secondary"
-                className="h-12 rounded-xl justify-start"
-                onClick={() => setSalesOpen(true)}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" /> {t("result.agentTools")}
-              </Button>
-            </div>
+            </>
           )}
         </Section>
       </div>
@@ -541,10 +656,18 @@ export default function ResultPage() {
             <SheetTitle>{t("result.agentTools")}</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-3 max-w-2xl mx-auto">
+            {result.agent_script?.client_message_ru && (
+              <ToolCard
+                title={t("result.agent.clientMessage")}
+                text={(lang === "ru" ? result.agent_script.client_message_ru : result.agent_script.client_message_en) || ""}
+              />
+            )}
             <ToolCard title={lang === "ru" ? "Питч за 30 секунд" : "30-second pitch"} text={pitchText} />
             <ToolCard
-              title={lang === "ru" ? "Рычаги торга" : "Negotiation levers"}
-              text={(result.red_flags ?? []).map((r) => `• ${lang === "ru" ? r.ru : r.en}`).join("\n") || (lang === "ru" ? "Сильных рычагов нет — объект ликвиден." : "No strong levers — property is liquid.")}
+              title={t("result.agent.talkingPoints")}
+              text={(result.negotiation?.arguments ?? []).map((a) => `• ${lang === "ru" ? a.ru : a.en}`).join("\n") ||
+                (result.red_flags ?? []).map((r) => `• ${lang === "ru" ? r.ru : r.en}`).join("\n") ||
+                (lang === "ru" ? "Сильных рычагов нет — объект ликвиден." : "No strong levers — property is liquid.")}
             />
             <ToolCard
               title={lang === "ru" ? "Ответы на возражения" : "Objection killer"}
@@ -699,6 +822,130 @@ function MarketCard({
           />
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function PriceProofCard({
+  pp,
+  lang,
+  t,
+}: {
+  pp: PriceProof;
+  lang: "ru" | "en";
+  t: (k: string) => string;
+}) {
+  const labelKey = pp.verdict_label_en ?? "No price";
+  const labelText = t(`result.priceProof.labels.${labelKey}`);
+  const tone =
+    labelKey === "Fair"
+      ? "bg-verdict-green/10 text-verdict-green border-verdict-green/30"
+      : labelKey === "Overpriced"
+      ? "bg-verdict-red/10 text-verdict-red border-verdict-red/30"
+      : labelKey === "Attractive"
+      ? "bg-accent/15 text-accent border-accent/30"
+      : "bg-secondary text-muted-foreground border-border";
+  const diff = pp.price_difference_percent;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            {t("result.priceProof.asking")}
+          </div>
+          <div className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
+            {typeof pp.asking_price === "number" ? formatNum(pp.asking_price) : "—"}
+          </div>
+        </div>
+        <span className={cn("inline-flex items-center rounded-full border px-3 py-1 text-xs uppercase tracking-widest font-semibold", tone)}>
+          {labelText}
+        </span>
+      </div>
+      <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Metric
+          label={t("result.priceProof.fairRange")}
+          value={
+            pp.fair_price_min && pp.fair_price_max
+              ? `${formatNum(pp.fair_price_min)}–${formatNum(pp.fair_price_max)}`
+              : "—"
+          }
+          accent
+        />
+        {typeof diff === "number" && (
+          <Metric
+            label={t("result.priceProof.diff")}
+            value={`${diff > 0 ? "+" : ""}${diff.toFixed(0)}%`}
+            sub={
+              Math.abs(diff) < 5
+                ? t("result.priceDeviation.fair")
+                : diff > 0
+                ? t("result.priceDeviation.above")
+                : t("result.priceDeviation.below")
+            }
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NegotiationCard({
+  n,
+  lang,
+  t,
+}: {
+  n: Negotiation;
+  lang: "ru" | "en";
+  t: (k: string) => string;
+}) {
+  const ccy = n.currency ?? "";
+  const fo = n.suggested_first_offer ?? 0;
+  const dmin = n.deal_zone_min ?? fo;
+  const dmax = n.deal_zone_max ?? fo;
+  const up = n.upper_limit ?? dmax;
+  const span = Math.max(1, up - fo);
+  const dminPct = ((dmin - fo) / span) * 100;
+  const dmaxPct = ((dmax - fo) / span) * 100;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Metric label={t("result.negotiation.firstOffer")} value={`${formatNum(fo)} ${ccy}`} accent />
+        <Metric label={t("result.negotiation.dealZone")} value={`${formatNum(dmin)}–${formatNum(dmax)}`} sub={ccy} />
+        <Metric label={t("result.negotiation.upper")} value={`${formatNum(up)} ${ccy}`} />
+      </div>
+
+      <div className="mt-5">
+        <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
+          <div
+            className="absolute top-0 bottom-0 bg-verdict-green/40"
+            style={{ left: `${Math.max(0, dminPct)}%`, width: `${Math.max(2, dmaxPct - dminPct)}%` }}
+          />
+          <div className="absolute top-0 bottom-0 w-0.5 bg-accent" style={{ left: "0%" }} />
+          <div className="absolute top-0 bottom-0 w-0.5 bg-verdict-red" style={{ left: "100%" }} />
+        </div>
+        <div className="mt-1.5 flex justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+          <span>{t("result.negotiation.firstOffer")}</span>
+          <span>{t("result.negotiation.upper")}</span>
+        </div>
+      </div>
+
+      {n.arguments && n.arguments.length > 0 && (
+        <div className="mt-5">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+            {t("result.negotiation.arguments")}
+          </div>
+          <ul className="space-y-2">
+            {n.arguments.map((a, i) => (
+              <li key={i} className="rounded-xl bg-background/60 border border-border p-3 flex gap-3">
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5 shrink-0">
+                  {a.kind ?? "·"}
+                </span>
+                <span className="text-sm leading-snug">{lang === "ru" ? a.ru : a.en}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

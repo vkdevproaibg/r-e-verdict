@@ -184,16 +184,17 @@
     }
   },
   "gather": {
-    "title": "Gathering context for this address",
-    "sub": "Checking the neighborhood, risks and market benchmarks — so the verdict isn't pulled from thin air.",
+    "title": "Building the market read",
+    "sub": "Gathering market signals and comparing similar properties — so the verdict is evidenced, not invented.",
     "steps": {
-      "neighborhood": "Identifying neighborhood and surroundings (infrastructure, transit, environment)",
-      "risks": "Checking risk zones (flood / fire / noise corridors — where available)",
-      "zoning": "Looking up territory limitations (rules / zoning — where available)",
-      "market": "Estimating market benchmark for this area (if type and size were given)",
-      "confidence": "Locking in confidence level: how much we could actually verify"
+      "reading": "Reading property input",
+      "signals": "Finding market signals",
+      "comparing": "Comparing similar properties",
+      "fairPrice": "Calculating fair price range",
+      "risks": "Checking risks",
+      "verdict": "Preparing verdict & negotiation"
     },
-    "footnote": "Some data may be unavailable in some regions. We'll honestly show that in the Confidence score."
+    "footnote": "Using available public signals and comparable market data. Where data is sparse we show that honestly in the Confidence score."
   },
   "refine": {
     "title": "Quick refinements",
@@ -273,7 +274,41 @@
       "publish": "Publish"
     },
     "agentTools": "Agent sales tools",
-    "presentedBy": "Presented by"
+    "presentedBy": "Presented by",
+    "priceProof": {
+      "title": "Fair price",
+      "asking": "Asking",
+      "fairRange": "Fair market range",
+      "diff": "Difference",
+      "labels": {
+        "Fair": "Fair",
+        "Overpriced": "Overpriced",
+        "Attractive": "Attractive",
+        "No price": "No price provided"
+      }
+    },
+    "comps": {
+      "title": "Comparable market signals",
+      "sub": "Three benchmarks we leaned on",
+      "perUnit": "per"
+    },
+    "negotiation": {
+      "title": "Negotiation position",
+      "firstOffer": "Suggested first offer",
+      "dealZone": "Realistic deal zone",
+      "upper": "Walk-away ceiling",
+      "arguments": "Negotiation arguments"
+    },
+    "manualChecks": {
+      "title": "Verify manually",
+      "sub": "What Propa can't fully confirm — ask the agent, seller or lawyer"
+    },
+    "agent": {
+      "clientMessage": "Client explanation",
+      "talkingPoints": "Talking points",
+      "clientPack": "Create Client Pack",
+      "packDone": "Pack ready — send to client"
+    }
   },
   "insufficient": {
     "title": "Not quite enough data — yet",
