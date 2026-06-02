@@ -68,6 +68,51 @@ ALWAYS respond with valid JSON ONLY (no markdown), matching this schema EXACTLY:
   "red_flags": [{"ru":"...","en":"...","severity":"low|medium|high"}, ...0-4 items],
   "next_steps": [{"ru":"...","en":"..."}, ...3 items — concrete buyer/renter actions, never "give me more data">],
 
+  "price_proof": {
+    "asking_price": <number or null — echo the user-stated price if any>,
+    "fair_price_min": <number — bottom of the fair total-price range for this exact object>,
+    "fair_price_max": <number — top of the fair total-price range>,
+    "price_difference_percent": <number — asking vs midpoint of fair range; positive = above, negative = below; null if no asking>,
+    "verdict_label_ru": "Справедливо" | "Завышено" | "Привлекательно" | "Нет цены",
+    "verdict_label_en": "Fair" | "Overpriced" | "Attractive" | "No price"
+  },
+
+  "comparable_signals": [
+    {
+      "area_ru": "<микро-район / комплекс>",
+      "area_en": "<micro-area / complex>",
+      "price_per_unit": <number>,
+      "unit": "sqm" | "sqft",
+      "currency": "<ISO>",
+      "similarity_ru": "<«Очень похоже» | «Похожий тип» | «Похожая локация»>",
+      "similarity_en": "<\"Very similar\" | \"Similar type\" | \"Similar area\">",
+      "why_ru": "<одно предложение: почему этот сигнал релевантен>",
+      "why_en": "<one sentence: why this signal matters>"
+    }, ...EXACTLY 3 items, realistic for the city even if synthesized from priors
+  ],
+
+  "negotiation": {
+    "suggested_first_offer": <number — concrete number to put on the table first>,
+    "deal_zone_min": <number — realistic lower bound of the deal zone>,
+    "deal_zone_max": <number — realistic upper bound>,
+    "upper_limit": <number — walk-away ceiling>,
+    "currency": "<ISO>",
+    "arguments": [
+      {"ru":"...","en":"...","kind":"price|risk|timing|market"},
+      ...2-3 items grounded in this object's risks and market position
+    ]
+  },
+
+  "manual_checks": [
+    {"ru":"<что Propa не может проверить и о чём спросить агента/юриста>","en":"..."},
+    ...3-5 items — honest, trust-building, concrete
+  ],
+
+  "agent_script": {
+    "client_message_ru": "<2-4 sentences the agent can send to a client to explain this verdict>",
+    "client_message_en": "<same in English>"
+  },
+
   "sources": [{"title":"...","url":"...","kind":"listing|index|news|portal"}, ...0-6 items, only when WEB_FINDINGS were provided]
 }
 
@@ -83,7 +128,12 @@ CRITICAL RULES:
 - "good" and "watch" are short pluses/minuses for the user — different from "reasons" (which justify the verdict) and "red_flags" (which are concrete warnings).
 - next_steps must be concrete actions (visit, verify, request, check), never "provide more data".
 - Echo back "purpose" verbatim.
-- Be calibrated. Don't inflate scores. Honest 60s are better than fake 90s.`;
+- Be calibrated. Don't inflate scores. Honest 60s are better than fake 90s.
+- price_proof.fair_price_min/max MUST be a total-price range for the object (use market.low_price_per_unit × area and high × area when area is known; otherwise derive a realistic total for the typical unit in this micro-area).
+- comparable_signals MUST contain exactly 3 entries. If you don't have hard listings, synthesize realistic 2026-priced signals for nearby micro-areas grounded in the priors — they must be plausible, not generic.
+- negotiation numbers MUST be internally consistent: suggested_first_offer ≤ deal_zone_min ≤ deal_zone_max ≤ upper_limit, and the deal zone must overlap fair_price_min/max.
+- manual_checks must be specific (e.g. "request title deed and check encumbrances", not "do due diligence").
+- Never claim "50+ sources" or invent source counts. Reference only what's in WEB_FINDINGS.`;
 
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
   try {
