@@ -274,7 +274,41 @@
       "publish": "Publish"
     },
     "agentTools": "Agent sales tools",
-    "presentedBy": "Presented by"
+    "presentedBy": "Presented by",
+    "priceProof": {
+      "title": "Fair price",
+      "asking": "Asking",
+      "fairRange": "Fair market range",
+      "diff": "Difference",
+      "labels": {
+        "Fair": "Fair",
+        "Overpriced": "Overpriced",
+        "Attractive": "Attractive",
+        "No price": "No price provided"
+      }
+    },
+    "comps": {
+      "title": "Comparable market signals",
+      "sub": "Three benchmarks we leaned on",
+      "perUnit": "per"
+    },
+    "negotiation": {
+      "title": "Negotiation position",
+      "firstOffer": "Suggested first offer",
+      "dealZone": "Realistic deal zone",
+      "upper": "Walk-away ceiling",
+      "arguments": "Negotiation arguments"
+    },
+    "manualChecks": {
+      "title": "Verify manually",
+      "sub": "What Propa can't fully confirm — ask the agent, seller or lawyer"
+    },
+    "agent": {
+      "clientMessage": "Client explanation",
+      "talkingPoints": "Talking points",
+      "clientPack": "Create Client Pack",
+      "packDone": "Pack ready — send to client"
+    }
   },
   "insufficient": {
     "title": "Not quite enough data — yet",
