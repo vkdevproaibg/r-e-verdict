@@ -825,3 +825,127 @@ function MarketCard({
     </div>
   );
 }
+
+function PriceProofCard({
+  pp,
+  lang,
+  t,
+}: {
+  pp: PriceProof;
+  lang: "ru" | "en";
+  t: (k: string) => string;
+}) {
+  const labelKey = pp.verdict_label_en ?? "No price";
+  const labelText = t(`result.priceProof.labels.${labelKey}`);
+  const tone =
+    labelKey === "Fair"
+      ? "bg-verdict-green/10 text-verdict-green border-verdict-green/30"
+      : labelKey === "Overpriced"
+      ? "bg-verdict-red/10 text-verdict-red border-verdict-red/30"
+      : labelKey === "Attractive"
+      ? "bg-accent/15 text-accent border-accent/30"
+      : "bg-secondary text-muted-foreground border-border";
+  const diff = pp.price_difference_percent;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            {t("result.priceProof.asking")}
+          </div>
+          <div className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
+            {typeof pp.asking_price === "number" ? formatNum(pp.asking_price) : "—"}
+          </div>
+        </div>
+        <span className={cn("inline-flex items-center rounded-full border px-3 py-1 text-xs uppercase tracking-widest font-semibold", tone)}>
+          {labelText}
+        </span>
+      </div>
+      <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Metric
+          label={t("result.priceProof.fairRange")}
+          value={
+            pp.fair_price_min && pp.fair_price_max
+              ? `${formatNum(pp.fair_price_min)}–${formatNum(pp.fair_price_max)}`
+              : "—"
+          }
+          accent
+        />
+        {typeof diff === "number" && (
+          <Metric
+            label={t("result.priceProof.diff")}
+            value={`${diff > 0 ? "+" : ""}${diff.toFixed(0)}%`}
+            sub={
+              Math.abs(diff) < 5
+                ? t("result.priceDeviation.fair")
+                : diff > 0
+                ? t("result.priceDeviation.above")
+                : t("result.priceDeviation.below")
+            }
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NegotiationCard({
+  n,
+  lang,
+  t,
+}: {
+  n: Negotiation;
+  lang: "ru" | "en";
+  t: (k: string) => string;
+}) {
+  const ccy = n.currency ?? "";
+  const fo = n.suggested_first_offer ?? 0;
+  const dmin = n.deal_zone_min ?? fo;
+  const dmax = n.deal_zone_max ?? fo;
+  const up = n.upper_limit ?? dmax;
+  const span = Math.max(1, up - fo);
+  const dminPct = ((dmin - fo) / span) * 100;
+  const dmaxPct = ((dmax - fo) / span) * 100;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Metric label={t("result.negotiation.firstOffer")} value={`${formatNum(fo)} ${ccy}`} accent />
+        <Metric label={t("result.negotiation.dealZone")} value={`${formatNum(dmin)}–${formatNum(dmax)}`} sub={ccy} />
+        <Metric label={t("result.negotiation.upper")} value={`${formatNum(up)} ${ccy}`} />
+      </div>
+
+      <div className="mt-5">
+        <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
+          <div
+            className="absolute top-0 bottom-0 bg-verdict-green/40"
+            style={{ left: `${Math.max(0, dminPct)}%`, width: `${Math.max(2, dmaxPct - dminPct)}%` }}
+          />
+          <div className="absolute top-0 bottom-0 w-0.5 bg-accent" style={{ left: "0%" }} />
+          <div className="absolute top-0 bottom-0 w-0.5 bg-verdict-red" style={{ left: "100%" }} />
+        </div>
+        <div className="mt-1.5 flex justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+          <span>{t("result.negotiation.firstOffer")}</span>
+          <span>{t("result.negotiation.upper")}</span>
+        </div>
+      </div>
+
+      {n.arguments && n.arguments.length > 0 && (
+        <div className="mt-5">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+            {t("result.negotiation.arguments")}
+          </div>
+          <ul className="space-y-2">
+            {n.arguments.map((a, i) => (
+              <li key={i} className="rounded-xl bg-background/60 border border-border p-3 flex gap-3">
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5 shrink-0">
+                  {a.kind ?? "·"}
+                </span>
+                <span className="text-sm leading-snug">{lang === "ru" ? a.ru : a.en}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
