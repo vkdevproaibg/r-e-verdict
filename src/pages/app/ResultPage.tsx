@@ -539,6 +539,22 @@ export default function ResultPage() {
           </Section>
         )}
 
+        {/* Manual checks */}
+        {result.manual_checks && result.manual_checks.length > 0 && (
+          <Section className="lg:col-span-12" title={t("result.manualChecks.title")}>
+            <div className="text-xs text-muted-foreground mb-3">{t("result.manualChecks.sub")}</div>
+            <ul className="grid sm:grid-cols-2 gap-2">
+              {result.manual_checks.map((m, i) => (
+                <li key={i} className="rounded-2xl bg-card border border-border p-4 flex gap-3">
+                  <ShieldCheck className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="text-sm leading-snug">{lang === "ru" ? m.ru : m.en}</div>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+
         {/* Next steps */}
         {result.next_steps?.length > 0 && (
           <Section className="lg:col-span-12" title={t("result.nextSteps")}>
