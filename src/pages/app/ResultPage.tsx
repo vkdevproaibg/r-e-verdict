@@ -69,6 +69,36 @@ interface SourceLink {
   kind?: string;
 }
 
+interface PriceProof {
+  asking_price?: number | null;
+  fair_price_min?: number;
+  fair_price_max?: number;
+  price_difference_percent?: number | null;
+  verdict_label_ru?: string;
+  verdict_label_en?: string;
+}
+
+interface CompSignal {
+  area_ru?: string;
+  area_en?: string;
+  price_per_unit?: number;
+  unit?: "sqm" | "sqft";
+  currency?: string;
+  similarity_ru?: string;
+  similarity_en?: string;
+  why_ru?: string;
+  why_en?: string;
+}
+
+interface Negotiation {
+  suggested_first_offer?: number;
+  deal_zone_min?: number;
+  deal_zone_max?: number;
+  upper_limit?: number;
+  currency?: string;
+  arguments?: { ru: string; en: string; kind?: string }[];
+}
+
 interface AIResult {
   verdict: Verdict;
   score: number;
@@ -92,6 +122,11 @@ interface AIResult {
   geo_address?: string;
   purpose?: "buy" | "rent";
   market?: MarketBlock;
+  price_proof?: PriceProof;
+  comparable_signals?: CompSignal[];
+  negotiation?: Negotiation;
+  manual_checks?: { ru: string; en: string }[];
+  agent_script?: { client_message_ru?: string; client_message_en?: string };
 }
 
 const verdictTokens: Record<Verdict, { bg: string; text: string; ring: string; dot: string }> = {
