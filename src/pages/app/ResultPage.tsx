@@ -292,6 +292,52 @@ export default function ResultPage() {
           </Section>
         )}
 
+        {/* Price proof — asking vs fair range */}
+        {result.price_proof && (result.price_proof.fair_price_min || result.price_proof.asking_price) && (
+          <Section className="lg:col-span-12" title={t("result.priceProof.title")}>
+            <PriceProofCard pp={result.price_proof} lang={lang} t={t} />
+          </Section>
+        )}
+
+        {/* Comparable signals */}
+        {result.comparable_signals && result.comparable_signals.length > 0 && (
+          <Section className="lg:col-span-12" title={t("result.comps.title")}>
+            <div className="text-xs text-muted-foreground mb-3">{t("result.comps.sub")}</div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {result.comparable_signals.slice(0, 3).map((c, i) => (
+                <div key={i} className="rounded-2xl border border-border bg-card p-5">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {lang === "ru" ? c.similarity_ru : c.similarity_en}
+                  </div>
+                  <div className="mt-1.5 text-base font-semibold leading-snug">
+                    {lang === "ru" ? c.area_ru : c.area_en}
+                  </div>
+                  {typeof c.price_per_unit === "number" && (
+                    <div className="mt-3 text-xl font-semibold tabular-nums">
+                      {formatNum(c.price_per_unit)}{" "}
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {c.currency ?? ""}/{c.unit === "sqft" ? "sqft" : "м²"}
+                      </span>
+                    </div>
+                  )}
+                  <p className="mt-3 text-xs text-foreground/75 leading-relaxed">
+                    {lang === "ru" ? c.why_ru : c.why_en}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Negotiation position */}
+        {result.negotiation && typeof result.negotiation.suggested_first_offer === "number" && (
+          <Section className="lg:col-span-12" title={t("result.negotiation.title")}>
+            <NegotiationCard n={result.negotiation} lang={lang} t={t} />
+          </Section>
+        )}
+
+
+
         {/* Detailed score bars */}
         {result.scores && (
           <Section className="lg:col-span-12" title={t("result.scoresSection")}>
