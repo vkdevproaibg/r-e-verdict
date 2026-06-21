@@ -300,6 +300,13 @@ export default function ResultPage() {
           </div>
         </motion.div>
 
+        {/* Agent: Client-ready briefing — sits above buyer sections */}
+        {role === "agent" && (
+          <Section className="lg:col-span-12" title={lang === "ru" ? "Готовый разбор для клиента" : "Client-ready briefing"}>
+            <ClientReadyCard result={result} lang={lang} tone={tone} setTone={setTone} navigate={navigate} id={id} />
+          </Section>
+        )}
+
         {/* Market price benchmark */}
         {result.market?.avg_price_per_unit && (
           <Section className="lg:col-span-12" title={t("result.marketSection")}>
