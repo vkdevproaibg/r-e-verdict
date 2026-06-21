@@ -74,7 +74,9 @@ ALWAYS respond with valid JSON ONLY (no markdown), matching this schema EXACTLY:
     "fair_price_max": <number — top of the fair total-price range>,
     "price_difference_percent": <number — asking vs midpoint of fair range; positive = above, negative = below; null if no asking>,
     "verdict_label_ru": "Справедливо" | "Завышено" | "Привлекательно" | "Нет цены",
-    "verdict_label_en": "Fair" | "Overpriced" | "Attractive" | "No price"
+    "verdict_label_en": "Fair" | "Overpriced" | "Attractive" | "No price",
+    "market_assumption_ru": "<одно предложение: на какие сегмент/район/год/валюту опирались>",
+    "market_assumption_en": "<one sentence: what segment/area/year/currency we anchored on>"
   },
 
   "comparable_signals": [
