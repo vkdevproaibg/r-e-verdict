@@ -900,6 +900,12 @@ function PriceProofCard({
           />
         )}
       </div>
+      {(pp.market_assumption_ru || pp.market_assumption_en) && (
+        <div className="mt-4 text-[11px] text-muted-foreground leading-relaxed border-t border-border pt-3">
+          <span className="uppercase tracking-widest mr-2">{lang === "ru" ? "На основе" : "Based on"}:</span>
+          {lang === "ru" ? pp.market_assumption_ru ?? pp.market_assumption_en : pp.market_assumption_en ?? pp.market_assumption_ru}
+        </div>
+      )}
     </div>
   );
 }
