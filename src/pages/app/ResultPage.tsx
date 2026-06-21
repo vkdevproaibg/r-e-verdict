@@ -651,17 +651,10 @@ export default function ResultPage() {
                 </Button>
               </div>
               <Button
-                variant="outline"
-                className="w-full h-12 rounded-xl mt-2 justify-start"
-                onClick={async () => {
-                  const url = `${window.location.origin}/share/${id}`;
-                  if (id) sessionStorage.setItem(`propaai_share_${id}`, JSON.stringify(result));
-                  try {
-                    await navigator.clipboard.writeText(url);
-                    toast.success(t("result.agent.packDone"));
-                  } catch {
-                    toast.info(url);
-                  }
+                className="w-full h-12 rounded-xl mt-2 justify-start bg-foreground text-background hover:bg-foreground/90"
+                onClick={() => {
+                  if (id) sessionStorage.setItem(`propaai_result_${id}`, JSON.stringify(result));
+                  navigate(`/app/pack/${id ?? "preview"}`);
                 }}
               >
                 <FileDown className="h-4 w-4 mr-2" /> {t("result.agent.clientPack")}
