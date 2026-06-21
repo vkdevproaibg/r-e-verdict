@@ -259,6 +259,9 @@ Deno.serve(async (req) => {
       "",
       webBlock,
       "",
+      userPrice
+        ? `IMPORTANT: The user provided an asking price (${userPrice}). Anchor price_proof.fair_price_min/max around this asking price per the PRICE-REALISM RULES. Do not silently undercut it without a documented red flag.`
+        : `IMPORTANT: No asking price provided. Build fair_price_min/max from market.low/high × area when area is known; if area is missing, give a realistic total for the typical unit in this micro-area. Keep the range wide and lower confidence rather than inventing a precise number.`,
       `Produce the full JSON per schema. Be calibrated. Tailor sub-scores and weights to purpose="${normalizedPurpose}". Cite up to 6 sources from WEB_FINDINGS in "sources" if you used them.`,
     ].filter(Boolean).join("\n");
 
