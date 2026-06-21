@@ -970,3 +970,188 @@ function NegotiationCard({
     </div>
   );
 }
+
+function ClientReadyCard({
+  result,
+  lang,
+  tone,
+  setTone,
+  navigate,
+  id,
+}: {
+  result: AIResult;
+  lang: "ru" | "en";
+  tone: "neutral" | "selling" | "cautious";
+  setTone: (t: "neutral" | "selling" | "cautious") => void;
+  navigate: (to: string) => void;
+  id?: string;
+}) {
+  const tones: { id: "neutral" | "selling" | "cautious"; ru: string; en: string }[] = [
+    { id: "neutral", ru: "Нейтрально", en: "Neutral" },
+    { id: "selling", ru: "Продающе", en: "Selling" },
+    { id: "cautious", ru: "Осторожно", en: "Cautious" },
+  ];
+  const toneText =
+    result.agent_script?.tones?.[tone]?.[lang] ??
+    (lang === "ru" ? result.agent_script?.client_message_ru : result.agent_script?.client_message_en) ??
+    "";
+  const headline =
+    (lang === "ru" ? result.agent_script?.headline_ru : result.agent_script?.headline_en) ??
+    (lang === "ru" ? result.headline_ru : result.headline_en);
+  const nextStep =
+    lang === "ru" ? result.agent_script?.next_step_ru : result.agent_script?.next_step_en;
+  const top3 = (result.reasons ?? []).slice(0, 3);
+  const top2flags = (result.red_flags ?? []).slice(0, 2);
+  const top2neg = (result.negotiation?.arguments ?? []).slice(0, 2);
+  const pp = result.price_proof;
+  const ccy = result.market?.currency ?? "";
+
+  const copyText = async () => {
+    const blocks = [
+      headline,
+      "",
+      toneText,
+      "",
+      lang === "ru" ? "Сильные стороны:" : "Strengths:",
+      ...top3.map((r) => `• ${lang === "ru" ? r.ru : r.en}`),
+      "",
+      top2flags.length ? (lang === "ru" ? "Что честно подсветить:" : "Honest concerns:") : "",
+      ...top2flags.map((r) => `• ${lang === "ru" ? r.ru : r.en}`),
+      "",
+      nextStep ? (lang === "ru" ? `Следующий шаг: ${nextStep}` : `Next step: ${nextStep}`) : "",
+    ].filter(Boolean);
+    try {
+      await navigator.clipboard.writeText(blocks.join("\n"));
+      toast.success(lang === "ru" ? "Скопировано" : "Copied");
+    } catch {
+      toast.info(lang === "ru" ? "Не удалось скопировать" : "Copy failed");
+    }
+  };
+
+  return (
+    <div className="rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/5 to-card p-5 lg:p-6 shadow-soft">
+      {/* Tone toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          {lang === "ru" ? "Тон обращения" : "Tone of voice"}
+        </div>
+        <div className="inline-flex rounded-full bg-secondary p-1 text-[11px]">
+          {tones.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTone(t.id)}
+              className={cn(
+                "px-3 py-1.5 rounded-full font-medium uppercase tracking-wider transition-all",
+                tone === t.id ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {lang === "ru" ? t.ru : t.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Headline */}
+      <h3 className="mt-4 text-xl lg:text-2xl font-semibold tracking-tight leading-snug">
+        {headline}
+      </h3>
+
+      {/* Tone-aware client message */}
+      {toneText && (
+        <p className="mt-3 text-[15px] text-foreground/85 leading-relaxed whitespace-pre-wrap">
+          {toneText}
+        </p>
+      )}
+
+      {/* 3-up: strengths / concerns / price */}
+      <div className="mt-5 grid md:grid-cols-3 gap-3">
+        <div className="rounded-2xl bg-background/60 border border-border p-4">
+          <div className="text-[10px] uppercase tracking-widest text-verdict-green mb-2">
+            {lang === "ru" ? "Сильные стороны" : "Strengths"}
+          </div>
+          <ul className="space-y-1.5">
+            {top3.map((r, i) => (
+              <li key={i} className="text-sm leading-snug flex gap-2">
+                <span className="text-verdict-green mt-0.5">+</span>
+                <span>{lang === "ru" ? r.ru : r.en}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-2xl bg-background/60 border border-border p-4">
+          <div className="text-[10px] uppercase tracking-widest text-verdict-yellow mb-2">
+            {lang === "ru" ? "Подсветить честно" : "Honest concerns"}
+          </div>
+          {top2flags.length === 0 ? (
+            <div className="text-sm text-muted-foreground">
+              {lang === "ru" ? "Серьёзных рисков нет." : "No major concerns."}
+            </div>
+          ) : (
+            <ul className="space-y-1.5">
+              {top2flags.map((r, i) => (
+                <li key={i} className="text-sm leading-snug flex gap-2">
+                  <span className="text-verdict-yellow mt-0.5">!</span>
+                  <span>{lang === "ru" ? r.ru : r.en}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="rounded-2xl bg-background/60 border border-border p-4">
+          <div className="text-[10px] uppercase tracking-widest text-accent mb-2">
+            {lang === "ru" ? "Объяснение цены" : "Price story"}
+          </div>
+          {pp?.fair_price_min && pp?.fair_price_max ? (
+            <div>
+              <div className="text-sm font-medium tabular-nums">
+                {formatNum(pp.fair_price_min)}–{formatNum(pp.fair_price_max)} {ccy}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1">
+                {lang === "ru" ? pp.market_assumption_ru ?? pp.verdict_label_ru : pp.market_assumption_en ?? pp.verdict_label_en}
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              {lang === "ru" ? "Цена не указана" : "No asking price"}
+            </div>
+          )}
+          {top2neg.length > 0 && (
+            <ul className="mt-3 space-y-1.5">
+              {top2neg.map((a, i) => (
+                <li key={i} className="text-xs leading-snug text-foreground/75 flex gap-2">
+                  <span className="text-accent mt-0.5">→</span>
+                  <span>{lang === "ru" ? a.ru : a.en}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Next step + actions */}
+      {nextStep && (
+        <div className="mt-5 rounded-2xl bg-foreground/95 text-background p-4">
+          <div className="text-[10px] uppercase tracking-widest opacity-70 mb-1">
+            {lang === "ru" ? "Следующий шаг" : "Next step"}
+          </div>
+          <div className="text-sm font-medium leading-snug">{nextStep}</div>
+        </div>
+      )}
+
+      <div className="mt-4 grid sm:grid-cols-2 gap-2">
+        <Button
+          onClick={() => {
+            if (id) sessionStorage.setItem(`propaai_result_${id}`, JSON.stringify(result));
+            navigate(`/app/pack/${id ?? "preview"}`);
+          }}
+          className="h-11 rounded-xl bg-foreground text-background hover:bg-foreground/90 justify-center"
+        >
+          <FileDown className="h-4 w-4 mr-2" /> {lang === "ru" ? "Открыть Client Pack" : "Open Client Pack"}
+        </Button>
+        <Button onClick={copyText} variant="secondary" className="h-11 rounded-xl justify-center">
+          <Copy className="h-4 w-4 mr-2" /> {lang === "ru" ? "Скопировать текст" : "Copy text"}
+        </Button>
+      </div>
+    </div>
+  );
+}
