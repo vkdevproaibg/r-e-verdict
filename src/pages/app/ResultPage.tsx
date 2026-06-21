@@ -158,6 +158,7 @@ export default function ResultPage() {
   const { role } = useRole();
   const [result, setResult] = useState<AIResult | null>(null);
   const [salesOpen, setSalesOpen] = useState(false);
+  const [tone, setTone] = useState<"neutral" | "selling" | "cautious">("neutral");
   const saveAnalysis = useSaveAnalysis();
   const lang = i18n.language === "ru" ? "ru" : "en";
 
