@@ -128,7 +128,19 @@ interface AIResult {
   comparable_signals?: CompSignal[];
   negotiation?: Negotiation;
   manual_checks?: { ru: string; en: string }[];
-  agent_script?: { client_message_ru?: string; client_message_en?: string };
+  agent_script?: {
+    client_message_ru?: string;
+    client_message_en?: string;
+    headline_ru?: string;
+    headline_en?: string;
+    next_step_ru?: string;
+    next_step_en?: string;
+    tones?: {
+      neutral?: { ru?: string; en?: string };
+      selling?: { ru?: string; en?: string };
+      cautious?: { ru?: string; en?: string };
+    };
+  };
 }
 
 const verdictTokens: Record<Verdict, { bg: string; text: string; ring: string; dot: string }> = {
