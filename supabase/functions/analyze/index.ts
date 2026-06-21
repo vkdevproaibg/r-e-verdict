@@ -111,8 +111,17 @@ ALWAYS respond with valid JSON ONLY (no markdown), matching this schema EXACTLY:
   ],
 
   "agent_script": {
-    "client_message_ru": "<2-4 sentences the agent can send to a client to explain this verdict>",
-    "client_message_en": "<same in English>"
+    "client_message_ru": "<2-4 sentences the agent can send to a client to explain this verdict (neutral tone)>",
+    "client_message_en": "<same in English>",
+    "tones": {
+      "neutral":  { "ru": "<2-4 предложения, нейтральный тон>",   "en": "<same, neutral>" },
+      "selling":  { "ru": "<2-4 предложения, продающий тон, без давления>", "en": "<same, selling but honest>" },
+      "cautious": { "ru": "<2-4 предложения, осторожный тон, подсветить риски>", "en": "<same, cautious>" }
+    },
+    "headline_ru": "<≤10 слов: что сказать клиенту первым>",
+    "headline_en": "<≤10 words: what to tell the client first>",
+    "next_step_ru": "<одна фраза: какой следующий шаг предложить клиенту>",
+    "next_step_en": "<one sentence: the next step to propose>"
   },
 
   "sources": [{"title":"...","url":"...","kind":"listing|index|news|portal"}, ...0-6 items, only when WEB_FINDINGS were provided]
