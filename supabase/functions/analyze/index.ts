@@ -74,7 +74,9 @@ ALWAYS respond with valid JSON ONLY (no markdown), matching this schema EXACTLY:
     "fair_price_max": <number — top of the fair total-price range>,
     "price_difference_percent": <number — asking vs midpoint of fair range; positive = above, negative = below; null if no asking>,
     "verdict_label_ru": "Справедливо" | "Завышено" | "Привлекательно" | "Нет цены",
-    "verdict_label_en": "Fair" | "Overpriced" | "Attractive" | "No price"
+    "verdict_label_en": "Fair" | "Overpriced" | "Attractive" | "No price",
+    "market_assumption_ru": "<одно предложение: на какие сегмент/район/год/валюту опирались>",
+    "market_assumption_en": "<one sentence: what segment/area/year/currency we anchored on>"
   },
 
   "comparable_signals": [
@@ -109,8 +111,17 @@ ALWAYS respond with valid JSON ONLY (no markdown), matching this schema EXACTLY:
   ],
 
   "agent_script": {
-    "client_message_ru": "<2-4 sentences the agent can send to a client to explain this verdict>",
-    "client_message_en": "<same in English>"
+    "client_message_ru": "<2-4 sentences the agent can send to a client to explain this verdict (neutral tone)>",
+    "client_message_en": "<same in English>",
+    "tones": {
+      "neutral":  { "ru": "<2-4 предложения, нейтральный тон>",   "en": "<same, neutral>" },
+      "selling":  { "ru": "<2-4 предложения, продающий тон, без давления>", "en": "<same, selling but honest>" },
+      "cautious": { "ru": "<2-4 предложения, осторожный тон, подсветить риски>", "en": "<same, cautious>" }
+    },
+    "headline_ru": "<≤10 слов: что сказать клиенту первым>",
+    "headline_en": "<≤10 words: what to tell the client first>",
+    "next_step_ru": "<одна фраза: какой следующий шаг предложить клиенту>",
+    "next_step_en": "<one sentence: the next step to propose>"
   },
 
   "sources": [{"title":"...","url":"...","kind":"listing|index|news|portal"}, ...0-6 items, only when WEB_FINDINGS were provided]
@@ -129,10 +140,26 @@ CRITICAL RULES:
 - next_steps must be concrete actions (visit, verify, request, check), never "provide more data".
 - Echo back "purpose" verbatim.
 - Be calibrated. Don't inflate scores. Honest 60s are better than fake 90s.
-- price_proof.fair_price_min/max MUST be a total-price range for the object (use market.low_price_per_unit × area and high × area when area is known; otherwise derive a realistic total for the typical unit in this micro-area).
-- comparable_signals MUST contain exactly 3 entries. If you don't have hard listings, synthesize realistic 2026-priced signals for nearby micro-areas grounded in the priors — they must be plausible, not generic.
-- negotiation numbers MUST be internally consistent: suggested_first_offer ≤ deal_zone_min ≤ deal_zone_max ≤ upper_limit, and the deal zone must overlap fair_price_min/max.
+
+PRICE-REALISM RULES (anti-lowball — read carefully):
+- The default presumption is asking ≈ market. Sellers in 2026 are not naive; the asking price is itself a strong market signal. Do NOT systematically discount it.
+- price_proof.fair_price_max should typically sit between asking × 0.95 and asking × 1.10 for liquid urban segments. fair_price_min should typically sit between asking × 0.90 and asking × 1.00. Never let fair_price_max fall below asking × 0.85 unless you can name a concrete, severe driver (legal encumbrance, structural defect, district downgrade, distressed sale) AND that driver appears in red_flags with severity "high".
+- WEB_FINDINGS take priority over priors. If listings/portals show comps near asking, the fair range MUST hug those comps, not undercut them.
+- Use the listing's local currency and unit. NEVER convert to USD silently. NEVER apply a generic "−15% to fair" rule of thumb.
+- If you don't have enough evidence to confidently price the object, LOWER confidence (set confidence_band="low", numeric 40–54) and EXPAND fair_price_min/max around the asking price (e.g. asking × 0.92 .. asking × 1.08). Never invent a precise low number to look smart.
+- comparable_signals MUST be priced consistently with fair_price_min/max — do not show comps at 30% below the fair range.
+- price_proof.market_assumption_ru/en is REQUIRED: state in one sentence what segment, district, year and currency you anchored on. If the listing currency or country is unclear, say so explicitly there.
+
+NEGOTIATION RULES:
+- suggested_first_offer ≥ fair_price_min × 0.95 unless a "high"-severity red flag justifies a deeper opening. Default opener for a fair-priced object: asking × 0.95–0.97, not asking × 0.80.
+- deal_zone_min ≥ fair_price_min × 0.97. deal_zone_max ≈ fair_price_max. upper_limit ≈ asking (or fair_price_max, whichever is higher).
+- Required ordering: suggested_first_offer ≤ deal_zone_min ≤ deal_zone_max ≤ upper_limit.
+
+OTHER:
+- price_proof.fair_price_min/max MUST be a total-price range for the object (use market.low_price_per_unit × area and high × area when area is known; otherwise derive a realistic total for the typical unit in this micro-area, consistent with the rules above).
+- comparable_signals MUST contain exactly 3 entries. If you don't have hard listings, synthesize realistic 2026-priced signals for nearby micro-areas grounded in the priors — they must be plausible and consistent with the fair range, not generic.
 - manual_checks must be specific (e.g. "request title deed and check encumbrances", not "do due diligence").
+- agent_script.tones MUST contain all three keys (neutral, selling, cautious). The "selling" tone may emphasise strengths but must NOT contradict red_flags. The "cautious" tone must surface the top risk explicitly.
 - Never claim "50+ sources" or invent source counts. Reference only what's in WEB_FINDINGS.`;
 
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
@@ -232,6 +259,9 @@ Deno.serve(async (req) => {
       "",
       webBlock,
       "",
+      userPrice
+        ? `IMPORTANT: The user provided an asking price (${userPrice}). Anchor price_proof.fair_price_min/max around this asking price per the PRICE-REALISM RULES. Do not silently undercut it without a documented red flag.`
+        : `IMPORTANT: No asking price provided. Build fair_price_min/max from market.low/high × area when area is known; if area is missing, give a realistic total for the typical unit in this micro-area. Keep the range wide and lower confidence rather than inventing a precise number.`,
       `Produce the full JSON per schema. Be calibrated. Tailor sub-scores and weights to purpose="${normalizedPurpose}". Cite up to 6 sources from WEB_FINDINGS in "sources" if you used them.`,
     ].filter(Boolean).join("\n");
 
@@ -250,7 +280,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userPrompt },

@@ -28,6 +28,7 @@ import GatherContextPage from "./pages/app/GatherContextPage";
 import RefinePage from "./pages/app/RefinePage";
 import InsufficientDataPage from "./pages/app/InsufficientDataPage";
 import ResultPage from "./pages/app/ResultPage";
+import ClientPackPage from "./pages/app/ClientPackPage";
 import LibraryPage from "./pages/app/LibraryPage";
 import ComparePage from "./pages/app/ComparePage";
 import HistoryPage from "./pages/app/HistoryPage";
@@ -85,6 +86,7 @@ const App = () => (
                 <Route path="/app/result/:id" element={<AppShell />}>
                   <Route index element={<ResultPage />} />
                 </Route>
+                <Route path="/app/pack/:id" element={<ClientPackPage />} />
 
                 {/* Onboarding */}
                 <Route path="/splash" element={<Splash />} />
