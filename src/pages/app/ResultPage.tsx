@@ -76,6 +76,8 @@ interface PriceProof {
   price_difference_percent?: number | null;
   verdict_label_ru?: string;
   verdict_label_en?: string;
+  market_assumption_ru?: string;
+  market_assumption_en?: string;
 }
 
 interface CompSignal {
