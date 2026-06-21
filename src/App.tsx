@@ -86,6 +86,7 @@ const App = () => (
                 <Route path="/app/result/:id" element={<AppShell />}>
                   <Route index element={<ResultPage />} />
                 </Route>
+                <Route path="/app/pack/:id" element={<ClientPackPage />} />
 
                 {/* Onboarding */}
                 <Route path="/splash" element={<Splash />} />
