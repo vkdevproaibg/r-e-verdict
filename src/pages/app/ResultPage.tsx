@@ -124,6 +124,17 @@ interface AIResult {
   geo_address?: string;
   purpose?: "buy" | "rent";
   market?: MarketBlock;
+  display_currency?: string;
+  local_reference?: {
+    currency?: string;
+    fx_rate_to_display?: number;
+    fx_date?: string;
+    asking_price_local?: number | null;
+    fair_price_min_local?: number;
+    fair_price_max_local?: number;
+    note_ru?: string;
+    note_en?: string;
+  };
   price_proof?: PriceProof;
   comparable_signals?: CompSignal[];
   negotiation?: Negotiation;
