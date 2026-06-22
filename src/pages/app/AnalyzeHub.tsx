@@ -50,12 +50,24 @@ export default function AnalyzeHub() {
       return;
     }
     if (m === "location") {
-      if (!geo) await requestGeo();
-      if (!navigator.geolocation) {
+      if (!("geolocation" in navigator)) {
         toast.error("Geolocation unavailable");
         return;
       }
-      start("location");
+      toast.loading("Locating…", { id: "geo" });
+      const fresh = await requestGeo();
+      toast.dismiss("geo");
+      if (!fresh) {
+        toast.error("Couldn't get current location. Check browser permissions.");
+        return;
+      }
+      const params = new URLSearchParams();
+      params.set("kind", "location");
+      params.set("purpose", purpose);
+      if (area.trim()) params.set("area", area.trim());
+      params.set("lat", String(fresh.lat));
+      params.set("lng", String(fresh.lng));
+      navigate(`/app/analyze/loading?${params.toString()}`);
       return;
     }
     if (m === "voice") {
