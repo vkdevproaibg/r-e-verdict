@@ -22,6 +22,8 @@ export default function GatherContextPage() {
   const q = params.get("q") ?? "";
   const purpose = (params.get("purpose") === "rent" ? "rent" : "buy") as "buy" | "rent";
   const areaParam = params.get("area") ?? "";
+  const latParam = params.get("lat");
+  const lngParam = params.get("lng");
   const refineParam = params.get("refine");
   let refine: Record<string, string> = {};
   if (refineParam) {
