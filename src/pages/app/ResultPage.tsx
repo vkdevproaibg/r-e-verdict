@@ -328,7 +328,13 @@ export default function ResultPage() {
         {/* Price proof — asking vs fair range */}
         {result.price_proof && (result.price_proof.fair_price_min || result.price_proof.asking_price) && (
           <Section className="lg:col-span-12" title={t("result.priceProof.title")}>
-            <PriceProofCard pp={result.price_proof} lang={lang} t={t} />
+            <PriceProofCard
+              pp={result.price_proof}
+              lang={lang}
+              t={t}
+              ccy={result.market?.currency ?? result.display_currency ?? "USD"}
+              local={result.local_reference}
+            />
           </Section>
         )}
 
