@@ -16,7 +16,7 @@ interface AppState {
   geo: { lat: number; lng: number } | null;
   setGeo: (g: { lat: number; lng: number } | null) => void;
   geoStatus: "idle" | "requesting" | "granted" | "denied";
-  requestGeo: () => Promise<void>;
+  requestGeo: () => Promise<{ lat: number; lng: number } | null>;
 }
 
 const Ctx = createContext<AppState | null>(null);
