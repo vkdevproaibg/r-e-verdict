@@ -45,21 +45,34 @@ ALWAYS respond with valid JSON ONLY (no markdown), matching this schema EXACTLY:
 
   "price_deviation_pct": <number or null — only when user provided a price; positive = above market, negative = below>,
 
+  "display_currency": "USD" | "EUR",
+
   "market": {
-    "currency": "<ISO 4217: USD, EUR, AED, RUB, etc., matching the location>",
+    "currency": "<MUST equal display_currency (USD or EUR)>",
     "unit": "sqm" | "sqft",
-    "avg_price_per_unit": <number — typical 2026 price for this type in this micro-area>,
-    "low_price_per_unit": <number>,
-    "high_price_per_unit": <number>,
-    "estimated_total": <number — avg × area when area known, else best fair-value guess>,
+    "avg_price_per_unit": <number — typical 2026 price for this type in this micro-area, in display_currency>,
+    "low_price_per_unit": <number, in display_currency>,
+    "high_price_per_unit": <number, in display_currency>,
+    "estimated_total": <number, in display_currency — avg × area when area known, else best fair-value guess>,
     "trend_pct_yoy": <number — can be negative>,
     "trend_direction": "up" | "down" | "flat",
     "trend_comment_ru": "<one sentence, plain Russian, explains the driver>",
     "trend_comment_en": "<same in English>",
-    "rent_per_month": <number or null>,
-    "rent_low": <number or null>,
-    "rent_high": <number or null>,
+    "rent_per_month": <number or null, in display_currency>,
+    "rent_low": <number or null, in display_currency>,
+    "rent_high": <number or null, in display_currency>,
     "gross_yield_pct": <number or null>
+  },
+
+  "local_reference": {
+    "currency": "<ISO 4217 of the country's local currency, e.g. GEL, RUB, AED, TRY, GBP>",
+    "fx_rate_to_display": <number — units of LOCAL per 1 of display_currency, at today's mid-market rate (2026)>,
+    "fx_date": "<YYYY-MM-DD — date of the FX assumption>",
+    "asking_price_local": <number or null — user's asking price converted to local currency at fx_rate_to_display>,
+    "fair_price_min_local": <number — fair_price_min × fx_rate_to_display>,
+    "fair_price_max_local": <number — fair_price_max × fx_rate_to_display>,
+    "note_ru": "<например: «Курс: 1 USD ≈ 2.72 GEL на 22.06.2026»>",
+    "note_en": "<e.g. \"FX: 1 USD ≈ 2.72 GEL on 2026-06-22\">"
   },
 
   "good": [{"ru":"...","en":"..."}, ...2-4 items — what is genuinely strong about this option],
