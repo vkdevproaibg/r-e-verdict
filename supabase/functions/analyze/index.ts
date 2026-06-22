@@ -45,21 +45,34 @@ ALWAYS respond with valid JSON ONLY (no markdown), matching this schema EXACTLY:
 
   "price_deviation_pct": <number or null — only when user provided a price; positive = above market, negative = below>,
 
+  "display_currency": "USD" | "EUR",
+
   "market": {
-    "currency": "<ISO 4217: USD, EUR, AED, RUB, etc., matching the location>",
+    "currency": "<MUST equal display_currency (USD or EUR)>",
     "unit": "sqm" | "sqft",
-    "avg_price_per_unit": <number — typical 2026 price for this type in this micro-area>,
-    "low_price_per_unit": <number>,
-    "high_price_per_unit": <number>,
-    "estimated_total": <number — avg × area when area known, else best fair-value guess>,
+    "avg_price_per_unit": <number — typical 2026 price for this type in this micro-area, in display_currency>,
+    "low_price_per_unit": <number, in display_currency>,
+    "high_price_per_unit": <number, in display_currency>,
+    "estimated_total": <number, in display_currency — avg × area when area known, else best fair-value guess>,
     "trend_pct_yoy": <number — can be negative>,
     "trend_direction": "up" | "down" | "flat",
     "trend_comment_ru": "<one sentence, plain Russian, explains the driver>",
     "trend_comment_en": "<same in English>",
-    "rent_per_month": <number or null>,
-    "rent_low": <number or null>,
-    "rent_high": <number or null>,
+    "rent_per_month": <number or null, in display_currency>,
+    "rent_low": <number or null, in display_currency>,
+    "rent_high": <number or null, in display_currency>,
     "gross_yield_pct": <number or null>
+  },
+
+  "local_reference": {
+    "currency": "<ISO 4217 of the country's local currency, e.g. GEL, RUB, AED, TRY, GBP>",
+    "fx_rate_to_display": <number — units of LOCAL per 1 of display_currency, at today's mid-market rate (2026)>,
+    "fx_date": "<YYYY-MM-DD — date of the FX assumption>",
+    "asking_price_local": <number or null — user's asking price converted to local currency at fx_rate_to_display>,
+    "fair_price_min_local": <number — fair_price_min × fx_rate_to_display>,
+    "fair_price_max_local": <number — fair_price_max × fx_rate_to_display>,
+    "note_ru": "<например: «Курс: 1 USD ≈ 2.72 GEL на 22.06.2026»>",
+    "note_en": "<e.g. \"FX: 1 USD ≈ 2.72 GEL on 2026-06-22\">"
   },
 
   "good": [{"ru":"...","en":"..."}, ...2-4 items — what is genuinely strong about this option],
@@ -145,7 +158,8 @@ PRICE-REALISM RULES (anti-lowball — read carefully):
 - The default presumption is asking ≈ market. Sellers in 2026 are not naive; the asking price is itself a strong market signal. Do NOT systematically discount it.
 - price_proof.fair_price_max should typically sit between asking × 0.95 and asking × 1.10 for liquid urban segments. fair_price_min should typically sit between asking × 0.90 and asking × 1.00. Never let fair_price_max fall below asking × 0.85 unless you can name a concrete, severe driver (legal encumbrance, structural defect, district downgrade, distressed sale) AND that driver appears in red_flags with severity "high".
 - WEB_FINDINGS take priority over priors. If listings/portals show comps near asking, the fair range MUST hug those comps, not undercut them.
-- Use the listing's local currency and unit. NEVER convert to USD silently. NEVER apply a generic "−15% to fair" rule of thumb.
+- CURRENCY (CRITICAL): ALL monetary numbers in this response (market.*, price_proof.asking_price/fair_price_min/max, comparable_signals[*].price_per_unit, negotiation.*) MUST be expressed in display_currency. Choose display_currency = "EUR" for Eurozone countries, "USD" everywhere else (including CIS, Caucasus, MENA, Asia, Latin America, UK, Turkey, etc.). If the user's asking price was clearly stated in a LOCAL currency (e.g. GEL, RUB, TRY, AED, GBP, KZT), you MUST convert it to display_currency using a realistic 2026 mid-market FX rate BEFORE using it. NEVER paste a local-currency number into a USD/EUR field. The local-currency view lives ONLY inside the "local_reference" block. Comparable signals MUST also use display_currency (set currency="USD" or "EUR" on each). The "unit" stays sqft for US/UK/Canada and sqm everywhere else.
+- local_reference is REQUIRED. Pick the country's actual local currency (Georgia=GEL, Russia=RUB, UAE=AED, Turkey=TRY, UK=GBP, Kazakhstan=KZT, etc.). For Eurozone or US listings where display_currency already equals the local currency, set local_reference.currency = display_currency, fx_rate_to_display = 1, and skip the *_local mirrors with the same values.
 - If you don't have enough evidence to confidently price the object, LOWER confidence (set confidence_band="low", numeric 40–54) and EXPAND fair_price_min/max around the asking price (e.g. asking × 0.92 .. asking × 1.08). Never invent a precise low number to look smart.
 - comparable_signals MUST be priced consistently with fair_price_min/max — do not show comps at 30% below the fair range.
 - price_proof.market_assumption_ru/en is REQUIRED: state in one sentence what segment, district, year and currency you anchored on. If the listing currency or country is unclear, say so explicitly there.

@@ -124,6 +124,17 @@ interface AIResult {
   geo_address?: string;
   purpose?: "buy" | "rent";
   market?: MarketBlock;
+  display_currency?: string;
+  local_reference?: {
+    currency?: string;
+    fx_rate_to_display?: number;
+    fx_date?: string;
+    asking_price_local?: number | null;
+    fair_price_min_local?: number;
+    fair_price_max_local?: number;
+    note_ru?: string;
+    note_en?: string;
+  };
   price_proof?: PriceProof;
   comparable_signals?: CompSignal[];
   negotiation?: Negotiation;
@@ -317,7 +328,13 @@ export default function ResultPage() {
         {/* Price proof — asking vs fair range */}
         {result.price_proof && (result.price_proof.fair_price_min || result.price_proof.asking_price) && (
           <Section className="lg:col-span-12" title={t("result.priceProof.title")}>
-            <PriceProofCard pp={result.price_proof} lang={lang} t={t} />
+            <PriceProofCard
+              pp={result.price_proof}
+              lang={lang}
+              t={t}
+              ccy={result.market?.currency ?? result.display_currency ?? "USD"}
+              local={result.local_reference}
+            />
           </Section>
         )}
 
@@ -845,10 +862,14 @@ function PriceProofCard({
   pp,
   lang,
   t,
+  ccy,
+  local,
 }: {
   pp: PriceProof;
   lang: "ru" | "en";
   t: (k: string) => string;
+  ccy: string;
+  local?: AIResult["local_reference"];
 }) {
   const labelKey = pp.verdict_label_en ?? "No price";
   const labelText = t(`result.priceProof.labels.${labelKey}`);
@@ -861,6 +882,16 @@ function PriceProofCard({
       ? "bg-accent/15 text-accent border-accent/30"
       : "bg-secondary text-muted-foreground border-border";
   const diff = pp.price_difference_percent;
+  const hasLocal = !!local && !!local.currency && local.currency !== ccy && (local.fx_rate_to_display ?? 0) > 0;
+  const askingLocal = hasLocal && typeof pp.asking_price === "number"
+    ? (typeof local!.asking_price_local === "number" ? local!.asking_price_local : pp.asking_price * local!.fx_rate_to_display!)
+    : null;
+  const fairMinLocal = hasLocal && pp.fair_price_min
+    ? (local!.fair_price_min_local ?? pp.fair_price_min * local!.fx_rate_to_display!)
+    : null;
+  const fairMaxLocal = hasLocal && pp.fair_price_max
+    ? (local!.fair_price_max_local ?? pp.fair_price_max * local!.fx_rate_to_display!)
+    : null;
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -869,8 +900,13 @@ function PriceProofCard({
             {t("result.priceProof.asking")}
           </div>
           <div className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
-            {typeof pp.asking_price === "number" ? formatNum(pp.asking_price) : "—"}
+            {typeof pp.asking_price === "number" ? `${formatNum(pp.asking_price)} ${ccy}` : "—"}
           </div>
+          {askingLocal !== null && (
+            <div className="mt-0.5 text-[11px] text-muted-foreground tabular-nums">
+              ≈ {formatNum(Math.round(askingLocal))} {local!.currency}
+            </div>
+          )}
         </div>
         <span className={cn("inline-flex items-center rounded-full border px-3 py-1 text-xs uppercase tracking-widest font-semibold", tone)}>
           {labelText}
@@ -881,8 +917,13 @@ function PriceProofCard({
           label={t("result.priceProof.fairRange")}
           value={
             pp.fair_price_min && pp.fair_price_max
-              ? `${formatNum(pp.fair_price_min)}–${formatNum(pp.fair_price_max)}`
+              ? `${formatNum(pp.fair_price_min)}–${formatNum(pp.fair_price_max)} ${ccy}`
               : "—"
+          }
+          sub={
+            fairMinLocal !== null && fairMaxLocal !== null
+              ? `≈ ${formatNum(Math.round(fairMinLocal))}–${formatNum(Math.round(fairMaxLocal))} ${local!.currency}`
+              : undefined
           }
           accent
         />
@@ -904,6 +945,11 @@ function PriceProofCard({
         <div className="mt-4 text-[11px] text-muted-foreground leading-relaxed border-t border-border pt-3">
           <span className="uppercase tracking-widest mr-2">{lang === "ru" ? "На основе" : "Based on"}:</span>
           {lang === "ru" ? pp.market_assumption_ru ?? pp.market_assumption_en : pp.market_assumption_en ?? pp.market_assumption_ru}
+        </div>
+      )}
+      {hasLocal && (local!.note_ru || local!.note_en) && (
+        <div className="mt-2 text-[11px] text-muted-foreground/80 leading-relaxed">
+          {lang === "ru" ? local!.note_ru ?? local!.note_en : local!.note_en ?? local!.note_ru}
         </div>
       )}
     </div>
