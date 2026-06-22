@@ -16,7 +16,7 @@ interface AppState {
   geo: { lat: number; lng: number } | null;
   setGeo: (g: { lat: number; lng: number } | null) => void;
   geoStatus: "idle" | "requesting" | "granted" | "denied";
-  requestGeo: () => Promise<void>;
+  requestGeo: () => Promise<{ lat: number; lng: number } | null>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -54,24 +54,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [role, goal, lang, onboarded, geo]);
 
   const requestGeo = () =>
-    new Promise<void>((resolve) => {
+    new Promise<{ lat: number; lng: number } | null>((resolve) => {
       if (!("geolocation" in navigator)) {
         setGeoStatus("denied");
-        resolve();
+        resolve(null);
         return;
       }
       setGeoStatus("requesting");
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          const next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setGeo(next);
           setGeoStatus("granted");
-          resolve();
+          resolve(next);
         },
         () => {
           setGeoStatus("denied");
-          resolve();
+          resolve(null);
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     });
 

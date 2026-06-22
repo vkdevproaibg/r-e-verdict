@@ -22,6 +22,8 @@ export default function GatherContextPage() {
   const q = params.get("q") ?? "";
   const purpose = (params.get("purpose") === "rent" ? "rent" : "buy") as "buy" | "rent";
   const areaParam = params.get("area") ?? "";
+  const latParam = params.get("lat");
+  const lngParam = params.get("lng");
   const refineParam = params.get("refine");
   let refine: Record<string, string> = {};
   if (refineParam) {
@@ -47,13 +49,15 @@ export default function GatherContextPage() {
       // For address / text / url / photo / document the AI must rely on the query
       // (or the address baked into refine{}), never on the device coordinates.
       const useGeo = kind === "location";
+      const lat = useGeo ? (latParam ? Number(latParam) : geo?.lat) : undefined;
+      const lng = useGeo ? (lngParam ? Number(lngParam) : geo?.lng) : undefined;
       try {
         const { data, error } = await db.functions.invoke("analyze", {
           body: {
             kind,
             query: q,
-            lat: useGeo ? geo?.lat : undefined,
-            lng: useGeo ? geo?.lng : undefined,
+            lat,
+            lng,
             refine,
             purpose,
             buyer_profile: profile.completedAt ? profile : undefined,
