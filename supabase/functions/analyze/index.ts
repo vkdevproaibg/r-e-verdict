@@ -341,14 +341,22 @@ function normalizeCurrencyLayer(parsed: Record<string, unknown>, options: {
   const negotiation = parsed.negotiation as Record<string, unknown>;
   const previousCurrency = String(market.currency ?? proof.currency ?? negotiation.currency ?? parsed.display_currency ?? "").toUpperCase();
   const aiCurrencyLooksLocal = previousCurrency === localCurrency && localCurrency !== displayCurrency;
+  const stated = options.userPrice ? parseMoney(options.userPrice) : null;
+  const statedCurrency = options.userPrice ? detectCurrencyInText(options.userPrice, localCurrency) : localCurrency;
+  const statedDisplay = stated === null ? null : statedCurrency === displayCurrency ? stated : stated / fxRateToDisplay(statedCurrency, displayCurrency);
 
   const areaNum = Number(String(options.area).replace(",", "."));
   const fairMax = asNumber(proof.fair_price_max);
+  const fairMin = asNumber(proof.fair_price_min);
+  const fairMid = fairMin !== null && fairMax !== null ? (fairMin + fairMax) / 2 : fairMax;
   const avgPerUnit = asNumber(market.avg_price_per_unit);
   const totalLooksLocal = localCurrency !== displayCurrency && fairMax !== null && avgPerUnit !== null && Number.isFinite(areaNum) && areaNum > 0
     ? fairMax > avgPerUnit * areaNum * 1.75
     : false;
-  const shouldConvertAiNumbers = aiCurrencyLooksLocal || totalLooksLocal;
+  const localNumbersLikely = aiCurrencyLooksLocal && statedDisplay !== null && fairMid !== null
+    ? fairMid > statedDisplay * 1.65
+    : false;
+  const shouldConvertAiNumbers = localNumbersLikely || totalLooksLocal;
 
   if (shouldConvertAiNumbers && fx !== 1) {
     const convert = (n: number) => n / fx;
@@ -369,9 +377,7 @@ function normalizeCurrencyLayer(parsed: Record<string, unknown>, options: {
     }
   }
 
-  const stated = options.userPrice ? parseMoney(options.userPrice) : null;
   if (stated !== null) {
-    const statedCurrency = detectCurrencyInText(options.userPrice, localCurrency);
     const statedFx = fxRateToDisplay(statedCurrency, displayCurrency);
     proof.asking_price = roundMoney(statedCurrency === displayCurrency ? stated : stated / statedFx);
   }
