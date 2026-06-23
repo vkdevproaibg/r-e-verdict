@@ -551,6 +551,11 @@ Deno.serve(async (req) => {
       parsed.lng = lng;
     }
     parsed.purpose = parsed.purpose === "rent" ? "rent" : normalizedPurpose;
+    normalizeCurrencyLayer(parsed, {
+      contextText: [query, geoContext, webQuery, webBlock].filter(Boolean).join("\n"),
+      userPrice,
+      area,
+    });
 
     // Attach the sources we actually fed in (if AI didn't echo them) for transparency
     if (!Array.isArray(parsed.sources) || (parsed.sources as unknown[]).length === 0) {
