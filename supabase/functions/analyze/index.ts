@@ -275,9 +275,22 @@ function detectCurrencyInText(value: string, localCurrency: string): string {
 }
 
 function parseMoney(value: string): number | null {
-  const match = value.replace(/\s/g, "").match(/\d+(?:[.,]\d+)?/g);
-  if (!match?.length) return null;
-  const raw = match.join("").replace(/,/g, ".");
+  const compact = value.replace(/\s/g, "");
+  const match = compact.match(/\d[\d.,]*/);
+  if (!match) return null;
+  let raw = match[0];
+  const lastDot = raw.lastIndexOf(".");
+  const lastComma = raw.lastIndexOf(",");
+  const decimalIndex = Math.max(lastDot, lastComma);
+  if (decimalIndex > -1) {
+    const decimals = raw.length - decimalIndex - 1;
+    const separators = (raw.match(/[.,]/g) ?? []).length;
+    if (separators === 1 && decimals === 3) {
+      raw = raw.replace(/[.,]/g, "");
+    } else {
+      raw = raw.slice(0, decimalIndex).replace(/[.,]/g, "") + "." + raw.slice(decimalIndex + 1).replace(/[.,]/g, "");
+    }
+  }
   const num = Number(raw);
   return Number.isFinite(num) ? num : null;
 }
