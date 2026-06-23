@@ -354,12 +354,13 @@ function normalizeCurrencyLayer(parsed: Record<string, unknown>, options: {
     ? fairMax > avgPerUnit * areaNum * 1.75
     : false;
   const localNumbersLikely = aiCurrencyLooksLocal && statedDisplay !== null && fairMid !== null
-    ? fairMid > statedDisplay * 1.65
+    ? fairMid > statedDisplay * 1.25
     : false;
   const rawLocalUserPriceAnchoredAsDisplay = stated !== null && statedDisplay !== null && statedCurrency !== displayCurrency && fairMid !== null
-    ? fairMid > statedDisplay * 1.65 && fairMid >= stated * 0.65 && fairMid <= stated * 1.35
+    ? fairMid > statedDisplay * 1.25 && fairMid >= stated * 0.45 && fairMid <= stated * 1.45
     : false;
-  const shouldConvertAiNumbers = localNumbersLikely || totalLooksLocal || rawLocalUserPriceAnchoredAsDisplay;
+  const localLabeledWithoutAsking = aiCurrencyLooksLocal && stated === null;
+  const shouldConvertAiNumbers = localNumbersLikely || totalLooksLocal || rawLocalUserPriceAnchoredAsDisplay || localLabeledWithoutAsking;
 
   if (shouldConvertAiNumbers && fx !== 1) {
     const convert = (n: number) => n / fx;
