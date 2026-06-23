@@ -198,6 +198,194 @@ interface WebFinding {
   kind?: "listing" | "index" | "news" | "portal";
 }
 
+const EUROZONE_HINTS = [
+  "austria", "belgium", "croatia", "cyprus", "estonia", "finland", "france", "germany", "greece",
+  "ireland", "italy", "latvia", "lithuania", "luxembourg", "malta", "netherlands", "portugal",
+  "slovakia", "slovenia", "spain", "австр", "бельги", "хорват", "кипр", "эстон", "финлян",
+  "франц", "герман", "грец", "ирланд", "итал", "латви", "литв", "люксембург", "мальт",
+  "нидерланд", "португал", "слова", "словен", "испан",
+];
+
+const LOCAL_CURRENCY_HINTS: Array<{ currency: string; hints: string[] }> = [
+  { currency: "GEL", hints: ["georgia", "sakartvelo", "tbilisi", "batumi", "kobuleti", "kutaisi", "груз", "сакартвело", "тбилиси", "батуми", "кобулети", "кутаиси"] },
+  { currency: "RUB", hints: ["russia", "moscow", "spb", "saint petersburg", "russian federation", "росси", "москва", "санкт-петербург", "петербург"] },
+  { currency: "TRY", hints: ["turkey", "istanbul", "antalya", "alanya", "izmir", "турци", "стамбул", "анталь", "аланья", "измир"] },
+  { currency: "AED", hints: ["uae", "united arab emirates", "dubai", "abu dhabi", "sharjah", "оаэ", "дубай", "абу-даби", "шардж"] },
+  { currency: "KZT", hints: ["kazakhstan", "almaty", "astana", "казахстан", "алматы", "астана"] },
+  { currency: "AMD", hints: ["armenia", "yerevan", "армени", "ереван"] },
+  { currency: "AZN", hints: ["azerbaijan", "baku", "азербайджан", "баку"] },
+  { currency: "GBP", hints: ["united kingdom", "uk", "england", "london", "scotland", "wales", "британи", "англи", "лондон", "шотланд", "уэльс"] },
+  { currency: "USD", hints: ["usa", "united states", "new york", "miami", "los angeles", "california", "florida", "сша", "нью-йорк", "майами"] },
+  { currency: "EUR", hints: EUROZONE_HINTS },
+];
+
+const FX_TO_USD_DISPLAY: Record<string, number> = {
+  USD: 1,
+  EUR: 0.93,
+  GEL: 2.72,
+  RUB: 91,
+  TRY: 41,
+  AED: 3.6725,
+  KZT: 520,
+  AMD: 390,
+  AZN: 1.7,
+  GBP: 0.79,
+};
+
+function includesAny(text: string, hints: string[]) {
+  return hints.some((hint) => text.includes(hint));
+}
+
+function inferLocalCurrency(text: string, fallback?: unknown): string {
+  const normalized = text.toLowerCase();
+  const explicit = String(fallback ?? "").toUpperCase();
+  for (const item of LOCAL_CURRENCY_HINTS) {
+    if (includesAny(normalized, item.hints)) return item.currency;
+  }
+  if (/^[A-Z]{3}$/.test(explicit)) return explicit;
+  return "USD";
+}
+
+function inferDisplayCurrency(text: string, localCurrency: string, fallback?: unknown): "USD" | "EUR" {
+  const normalized = text.toLowerCase();
+  if (localCurrency === "EUR" || includesAny(normalized, EUROZONE_HINTS)) return "EUR";
+  const explicit = String(fallback ?? "").toUpperCase();
+  return explicit === "EUR" ? "EUR" : "USD";
+}
+
+function fxRateToDisplay(localCurrency: string, displayCurrency: "USD" | "EUR") {
+  if (localCurrency === displayCurrency) return 1;
+  const localPerUsd = FX_TO_USD_DISPLAY[localCurrency] ?? 1;
+  if (displayCurrency === "USD") return localPerUsd;
+  const eurPerUsd = FX_TO_USD_DISPLAY.EUR;
+  return localPerUsd / eurPerUsd;
+}
+
+function detectCurrencyInText(value: string, localCurrency: string): string {
+  const upper = value.toUpperCase();
+  if (/\bUSD\b|\$|USDT|ДОЛЛ|DOLLAR/.test(upper)) return "USD";
+  if (/\bEUR\b|€|ЕВРО|EURO/.test(upper)) return "EUR";
+  if (/\bGEL\b|₾|ЛАРИ|LARI/.test(upper)) return "GEL";
+  if (/\bRUB\b|₽|РУБ/.test(upper)) return "RUB";
+  if (/\bTRY\b|₺|ЛИР|LIRA/.test(upper)) return "TRY";
+  if (/\bAED\b|DIRHAM|ДИРХ/.test(upper)) return "AED";
+  if (/\bKZT\b|₸|ТЕНГЕ/.test(upper)) return "KZT";
+  if (/\bGBP\b|£|ФУНТ|POUND/.test(upper)) return "GBP";
+  return localCurrency;
+}
+
+function parseMoney(value: string): number | null {
+  const match = value.replace(/\s/g, "").match(/\d+(?:[.,]\d+)?/g);
+  if (!match?.length) return null;
+  const raw = match.join("").replace(/,/g, ".");
+  const num = Number(raw);
+  return Number.isFinite(num) ? num : null;
+}
+
+function roundMoney(value: number | null | undefined): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  if (Math.abs(value) >= 100000) return Math.round(value / 1000) * 1000;
+  if (Math.abs(value) >= 10000) return Math.round(value / 100) * 100;
+  if (Math.abs(value) >= 1000) return Math.round(value / 10) * 10;
+  return Math.round(value);
+}
+
+function asNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function setNestedNumber(obj: Record<string, unknown>, path: string[], transform: (n: number) => number) {
+  let target: Record<string, unknown> | undefined = obj;
+  for (let i = 0; i < path.length - 1; i += 1) {
+    const next = target?.[path[i]];
+    if (!next || typeof next !== "object" || Array.isArray(next)) return;
+    target = next as Record<string, unknown>;
+  }
+  const key = path[path.length - 1];
+  const current = asNumber(target?.[key]);
+  if (current !== null) target![key] = roundMoney(transform(current));
+}
+
+function normalizeCurrencyLayer(parsed: Record<string, unknown>, options: {
+  contextText: string;
+  userPrice: string;
+  area: string;
+}) {
+  const localRef = parsed.local_reference && typeof parsed.local_reference === "object"
+    ? parsed.local_reference as Record<string, unknown>
+    : {};
+  const localCurrency = inferLocalCurrency(options.contextText, localRef.currency);
+  const displayCurrency = inferDisplayCurrency(options.contextText, localCurrency, parsed.display_currency);
+  const fx = fxRateToDisplay(localCurrency, displayCurrency);
+
+  parsed.display_currency = displayCurrency;
+  if (!parsed.market || typeof parsed.market !== "object" || Array.isArray(parsed.market)) parsed.market = {};
+  if (!parsed.price_proof || typeof parsed.price_proof !== "object" || Array.isArray(parsed.price_proof)) parsed.price_proof = {};
+  if (!parsed.negotiation || typeof parsed.negotiation !== "object" || Array.isArray(parsed.negotiation)) parsed.negotiation = {};
+
+  const market = parsed.market as Record<string, unknown>;
+  const proof = parsed.price_proof as Record<string, unknown>;
+  const negotiation = parsed.negotiation as Record<string, unknown>;
+  const previousCurrency = String(market.currency ?? proof.currency ?? negotiation.currency ?? parsed.display_currency ?? "").toUpperCase();
+  const aiCurrencyLooksLocal = previousCurrency === localCurrency && localCurrency !== displayCurrency;
+
+  const areaNum = Number(String(options.area).replace(",", "."));
+  const fairMax = asNumber(proof.fair_price_max);
+  const avgPerUnit = asNumber(market.avg_price_per_unit);
+  const totalLooksLocal = localCurrency !== displayCurrency && fairMax !== null && avgPerUnit !== null && Number.isFinite(areaNum) && areaNum > 0
+    ? fairMax > avgPerUnit * areaNum * 1.75
+    : false;
+  const shouldConvertAiNumbers = aiCurrencyLooksLocal || totalLooksLocal;
+
+  if (shouldConvertAiNumbers && fx !== 1) {
+    const convert = (n: number) => n / fx;
+    [
+      ["market", "avg_price_per_unit"], ["market", "low_price_per_unit"], ["market", "high_price_per_unit"],
+      ["market", "estimated_total"], ["market", "rent_per_month"], ["market", "rent_low"], ["market", "rent_high"],
+      ["price_proof", "asking_price"], ["price_proof", "fair_price_min"], ["price_proof", "fair_price_max"],
+      ["negotiation", "suggested_first_offer"], ["negotiation", "deal_zone_min"], ["negotiation", "deal_zone_max"], ["negotiation", "upper_limit"],
+    ].forEach((path) => setNestedNumber(parsed, path, convert));
+
+    if (Array.isArray(parsed.comparable_signals)) {
+      parsed.comparable_signals = parsed.comparable_signals.map((item) => {
+        if (!item || typeof item !== "object") return item;
+        const row = item as Record<string, unknown>;
+        const price = asNumber(row.price_per_unit);
+        return { ...row, price_per_unit: price === null ? row.price_per_unit : roundMoney(price / fx), currency: displayCurrency };
+      });
+    }
+  }
+
+  const stated = options.userPrice ? parseMoney(options.userPrice) : null;
+  if (stated !== null) {
+    const statedCurrency = detectCurrencyInText(options.userPrice, localCurrency);
+    const statedFx = fxRateToDisplay(statedCurrency, displayCurrency);
+    proof.asking_price = roundMoney(statedCurrency === displayCurrency ? stated : stated / statedFx);
+  }
+
+  market.currency = displayCurrency;
+  negotiation.currency = displayCurrency;
+  if (Array.isArray(parsed.comparable_signals)) {
+    parsed.comparable_signals = parsed.comparable_signals.map((item) => (
+      item && typeof item === "object" ? { ...(item as Record<string, unknown>), currency: displayCurrency } : item
+    ));
+  }
+
+  const fairMinDisplay = asNumber(proof.fair_price_min);
+  const fairMaxDisplay = asNumber(proof.fair_price_max);
+  const askingDisplay = asNumber(proof.asking_price);
+  parsed.local_reference = {
+    currency: localCurrency,
+    fx_rate_to_display: Number(fx.toFixed(4)),
+    fx_date: new Date().toISOString().slice(0, 10),
+    asking_price_local: askingDisplay === null ? null : roundMoney(askingDisplay * fx),
+    fair_price_min_local: fairMinDisplay === null ? null : roundMoney(fairMinDisplay * fx),
+    fair_price_max_local: fairMaxDisplay === null ? null : roundMoney(fairMaxDisplay * fx),
+    note_ru: `Курс: 1 ${displayCurrency} ≈ ${Number(fx.toFixed(4))} ${localCurrency} на ${new Date().toISOString().slice(0, 10)}`,
+    note_en: `FX: 1 ${displayCurrency} ≈ ${Number(fx.toFixed(4))} ${localCurrency} on ${new Date().toISOString().slice(0, 10)}`,
+  };
+}
+
 async function firecrawlSearch(query: string, lang: string): Promise<WebFinding[]> {
   const key = Deno.env.get("FIRECRAWL_API_KEY");
   if (!key) {
