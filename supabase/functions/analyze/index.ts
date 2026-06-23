@@ -15,7 +15,7 @@ You always commit to a verdict (Strong / Decent / Weak) and never refuse with "n
 You will receive:
 - input kind, purpose ("buy" or "rent"), free-text query
 - optional reverse-geocoded address (only meaningful when explicitly attached)
-- optional refine fields: type, area_m2, price (in local currency), purpose
+- optional refine fields: type, area_m2, price (may be local/user-stated currency), purpose
 - WEB_FINDINGS: short snippets we scraped from public listings/portals about the local market. Treat them as soft evidence; cross-check, don't quote verbatim.
 
 ALWAYS respond with valid JSON ONLY (no markdown), matching this schema EXACTLY:
@@ -82,7 +82,7 @@ ALWAYS respond with valid JSON ONLY (no markdown), matching this schema EXACTLY:
   "next_steps": [{"ru":"...","en":"..."}, ...3 items — concrete buyer/renter actions, never "give me more data">],
 
   "price_proof": {
-    "asking_price": <number or null — echo the user-stated price if any>,
+    "asking_price": <number or null — user-stated price normalized into display_currency if any>,
     "fair_price_min": <number — bottom of the fair total-price range for this exact object>,
     "fair_price_max": <number — top of the fair total-price range>,
     "price_difference_percent": <number — asking vs midpoint of fair range; positive = above, negative = below; null if no asking>,
@@ -159,7 +159,7 @@ PRICE-REALISM RULES (anti-lowball — read carefully):
 - price_proof.fair_price_max should typically sit between asking × 0.95 and asking × 1.10 for liquid urban segments. fair_price_min should typically sit between asking × 0.90 and asking × 1.00. Never let fair_price_max fall below asking × 0.85 unless you can name a concrete, severe driver (legal encumbrance, structural defect, district downgrade, distressed sale) AND that driver appears in red_flags with severity "high".
 - WEB_FINDINGS take priority over priors. If listings/portals show comps near asking, the fair range MUST hug those comps, not undercut them.
 - CURRENCY (CRITICAL): ALL monetary numbers in this response (market.*, price_proof.asking_price/fair_price_min/max, comparable_signals[*].price_per_unit, negotiation.*) MUST be expressed in display_currency. Choose display_currency = "EUR" for Eurozone countries, "USD" everywhere else (including CIS, Caucasus, MENA, Asia, Latin America, UK, Turkey, etc.). If the user's asking price was clearly stated in a LOCAL currency (e.g. GEL, RUB, TRY, AED, GBP, KZT), you MUST convert it to display_currency using a realistic 2026 mid-market FX rate BEFORE using it. NEVER paste a local-currency number into a USD/EUR field. The local-currency view lives ONLY inside the "local_reference" block. Comparable signals MUST also use display_currency (set currency="USD" or "EUR" on each). The "unit" stays sqft for US/UK/Canada and sqm everywhere else.
-- local_reference is REQUIRED. Pick the country's actual local currency (Georgia=GEL, Russia=RUB, UAE=AED, Turkey=TRY, UK=GBP, Kazakhstan=KZT, etc.). For Eurozone or US listings where display_currency already equals the local currency, set local_reference.currency = display_currency, fx_rate_to_display = 1, and skip the *_local mirrors with the same values.
+- local_reference is REQUIRED. Pick the country's actual local currency (Georgia=GEL, Russia=RUB, UAE=AED, Turkey=TRY, UK=GBP, Kazakhstan=KZT, etc.). For Eurozone or US listings where display_currency already equals the local currency, set local_reference.currency = display_currency, fx_rate_to_display = 1, and set the *_local mirrors to the same values.
 - If you don't have enough evidence to confidently price the object, LOWER confidence (set confidence_band="low", numeric 40–54) and EXPAND fair_price_min/max around the asking price (e.g. asking × 0.92 .. asking × 1.08). Never invent a precise low number to look smart.
 - comparable_signals MUST be priced consistently with fair_price_min/max — do not show comps at 30% below the fair range.
 - price_proof.market_assumption_ru/en is REQUIRED: state in one sentence what segment, district, year and currency you anchored on. If the listing currency or country is unclear, say so explicitly there.
@@ -196,6 +196,217 @@ interface WebFinding {
   url: string;
   snippet: string;
   kind?: "listing" | "index" | "news" | "portal";
+}
+
+const EUROZONE_HINTS = [
+  "austria", "belgium", "croatia", "cyprus", "estonia", "finland", "france", "germany", "greece",
+  "ireland", "italy", "latvia", "lithuania", "luxembourg", "malta", "netherlands", "portugal",
+  "slovakia", "slovenia", "spain", "австр", "бельги", "хорват", "кипр", "эстон", "финлян",
+  "франц", "герман", "грец", "ирланд", "итал", "латви", "литв", "люксембург", "мальт",
+  "нидерланд", "португал", "слова", "словен", "испан",
+];
+
+const LOCAL_CURRENCY_HINTS: Array<{ currency: string; hints: string[] }> = [
+  { currency: "GEL", hints: ["georgia", "sakartvelo", "tbilisi", "batumi", "kobuleti", "kutaisi", "груз", "сакартвело", "тбилиси", "батуми", "кобулети", "кутаиси"] },
+  { currency: "RUB", hints: ["russia", "moscow", "spb", "saint petersburg", "russian federation", "росси", "москва", "санкт-петербург", "петербург"] },
+  { currency: "TRY", hints: ["turkey", "istanbul", "antalya", "alanya", "izmir", "турци", "стамбул", "анталь", "аланья", "измир"] },
+  { currency: "AED", hints: ["uae", "united arab emirates", "dubai", "abu dhabi", "sharjah", "оаэ", "дубай", "абу-даби", "шардж"] },
+  { currency: "KZT", hints: ["kazakhstan", "almaty", "astana", "казахстан", "алматы", "астана"] },
+  { currency: "AMD", hints: ["armenia", "yerevan", "армени", "ереван"] },
+  { currency: "AZN", hints: ["azerbaijan", "baku", "азербайджан", "баку"] },
+  { currency: "GBP", hints: ["united kingdom", "uk", "england", "london", "scotland", "wales", "британи", "англи", "лондон", "шотланд", "уэльс"] },
+  { currency: "USD", hints: ["usa", "united states", "new york", "miami", "los angeles", "california", "florida", "сша", "нью-йорк", "майами"] },
+  { currency: "EUR", hints: EUROZONE_HINTS },
+];
+
+const FX_TO_USD_DISPLAY: Record<string, number> = {
+  USD: 1,
+  EUR: 0.93,
+  GEL: 2.72,
+  RUB: 91,
+  TRY: 41,
+  AED: 3.6725,
+  KZT: 520,
+  AMD: 390,
+  AZN: 1.7,
+  GBP: 0.79,
+};
+
+function includesAny(text: string, hints: string[]) {
+  return hints.some((hint) => text.includes(hint));
+}
+
+function inferLocalCurrency(text: string, fallback?: unknown): string {
+  const normalized = text.toLowerCase();
+  const explicit = String(fallback ?? "").toUpperCase();
+  for (const item of LOCAL_CURRENCY_HINTS) {
+    if (includesAny(normalized, item.hints)) return item.currency;
+  }
+  if (/^[A-Z]{3}$/.test(explicit)) return explicit;
+  return "USD";
+}
+
+function inferDisplayCurrency(text: string, localCurrency: string, fallback?: unknown): "USD" | "EUR" {
+  const normalized = text.toLowerCase();
+  if (localCurrency === "EUR" || includesAny(normalized, EUROZONE_HINTS)) return "EUR";
+  const explicit = String(fallback ?? "").toUpperCase();
+  return explicit === "EUR" ? "EUR" : "USD";
+}
+
+function fxRateToDisplay(localCurrency: string, displayCurrency: "USD" | "EUR") {
+  if (localCurrency === displayCurrency) return 1;
+  const localPerUsd = FX_TO_USD_DISPLAY[localCurrency] ?? 1;
+  if (displayCurrency === "USD") return localPerUsd;
+  const eurPerUsd = FX_TO_USD_DISPLAY.EUR;
+  return localPerUsd / eurPerUsd;
+}
+
+function detectCurrencyInText(value: string, localCurrency: string): string {
+  const upper = value.toUpperCase();
+  if (/\bUSD\b|\$|USDT|ДОЛЛ|DOLLAR/.test(upper)) return "USD";
+  if (/\bEUR\b|€|ЕВРО|EURO/.test(upper)) return "EUR";
+  if (/\bGEL\b|₾|ЛАРИ|LARI/.test(upper)) return "GEL";
+  if (/\bRUB\b|₽|РУБ/.test(upper)) return "RUB";
+  if (/\bTRY\b|₺|ЛИР|LIRA/.test(upper)) return "TRY";
+  if (/\bAED\b|DIRHAM|ДИРХ/.test(upper)) return "AED";
+  if (/\bKZT\b|₸|ТЕНГЕ/.test(upper)) return "KZT";
+  if (/\bGBP\b|£|ФУНТ|POUND/.test(upper)) return "GBP";
+  return localCurrency;
+}
+
+function parseMoney(value: string): number | null {
+  const compact = value.replace(/\s/g, "");
+  const match = compact.match(/\d[\d.,]*/);
+  if (!match) return null;
+  let raw = match[0];
+  const lastDot = raw.lastIndexOf(".");
+  const lastComma = raw.lastIndexOf(",");
+  const decimalIndex = Math.max(lastDot, lastComma);
+  if (decimalIndex > -1) {
+    const decimals = raw.length - decimalIndex - 1;
+    const separators = (raw.match(/[.,]/g) ?? []).length;
+    if (separators === 1 && decimals === 3) {
+      raw = raw.replace(/[.,]/g, "");
+    } else {
+      raw = raw.slice(0, decimalIndex).replace(/[.,]/g, "") + "." + raw.slice(decimalIndex + 1).replace(/[.,]/g, "");
+    }
+  }
+  const num = Number(raw);
+  return Number.isFinite(num) ? num : null;
+}
+
+function roundMoney(value: number | null | undefined): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  if (Math.abs(value) >= 100000) return Math.round(value / 1000) * 1000;
+  if (Math.abs(value) >= 10000) return Math.round(value / 100) * 100;
+  if (Math.abs(value) >= 1000) return Math.round(value / 10) * 10;
+  return Math.round(value);
+}
+
+function asNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function setNestedNumber(obj: Record<string, unknown>, path: string[], transform: (n: number) => number) {
+  let target: Record<string, unknown> | undefined = obj;
+  for (let i = 0; i < path.length - 1; i += 1) {
+    const next = target?.[path[i]];
+    if (!next || typeof next !== "object" || Array.isArray(next)) return;
+    target = next as Record<string, unknown>;
+  }
+  const key = path[path.length - 1];
+  const current = asNumber(target?.[key]);
+  if (current !== null) target![key] = roundMoney(transform(current));
+}
+
+function normalizeCurrencyLayer(parsed: Record<string, unknown>, options: {
+  contextText: string;
+  userPrice: string;
+  area: string;
+}) {
+  const localRef = parsed.local_reference && typeof parsed.local_reference === "object"
+    ? parsed.local_reference as Record<string, unknown>
+    : {};
+  const localCurrency = inferLocalCurrency(options.contextText, localRef.currency);
+  const displayCurrency = inferDisplayCurrency(options.contextText, localCurrency, parsed.display_currency);
+  const fx = fxRateToDisplay(localCurrency, displayCurrency);
+
+  parsed.display_currency = displayCurrency;
+  if (!parsed.market || typeof parsed.market !== "object" || Array.isArray(parsed.market)) parsed.market = {};
+  if (!parsed.price_proof || typeof parsed.price_proof !== "object" || Array.isArray(parsed.price_proof)) parsed.price_proof = {};
+  if (!parsed.negotiation || typeof parsed.negotiation !== "object" || Array.isArray(parsed.negotiation)) parsed.negotiation = {};
+
+  const market = parsed.market as Record<string, unknown>;
+  const proof = parsed.price_proof as Record<string, unknown>;
+  const negotiation = parsed.negotiation as Record<string, unknown>;
+  const previousCurrency = String(market.currency ?? proof.currency ?? negotiation.currency ?? parsed.display_currency ?? "").toUpperCase();
+  const aiCurrencyLooksLocal = previousCurrency === localCurrency && localCurrency !== displayCurrency;
+  const stated = options.userPrice ? parseMoney(options.userPrice) : null;
+  const statedCurrency = options.userPrice ? detectCurrencyInText(options.userPrice, localCurrency) : localCurrency;
+  const statedDisplay = stated === null ? null : statedCurrency === displayCurrency ? stated : stated / fxRateToDisplay(statedCurrency, displayCurrency);
+
+  const areaNum = Number(String(options.area).replace(",", "."));
+  const fairMax = asNumber(proof.fair_price_max);
+  const fairMin = asNumber(proof.fair_price_min);
+  const fairMid = fairMin !== null && fairMax !== null ? (fairMin + fairMax) / 2 : fairMax;
+  const avgPerUnit = asNumber(market.avg_price_per_unit);
+  const totalLooksLocal = localCurrency !== displayCurrency && fairMax !== null && avgPerUnit !== null && Number.isFinite(areaNum) && areaNum > 0
+    ? fairMax > avgPerUnit * areaNum * 1.75
+    : false;
+  const localNumbersLikely = aiCurrencyLooksLocal && statedDisplay !== null && fairMid !== null
+    ? fairMid > statedDisplay * 1.25
+    : false;
+  const rawLocalUserPriceAnchoredAsDisplay = stated !== null && statedDisplay !== null && statedCurrency !== displayCurrency && fairMid !== null
+    ? fairMid > statedDisplay * 1.25 && fairMid >= stated * 0.45 && fairMid <= stated * 1.45
+    : false;
+  const localLabeledWithoutAsking = aiCurrencyLooksLocal && stated === null;
+  const shouldConvertAiNumbers = localNumbersLikely || totalLooksLocal || rawLocalUserPriceAnchoredAsDisplay || localLabeledWithoutAsking;
+
+  if (shouldConvertAiNumbers && fx !== 1) {
+    const convert = (n: number) => n / fx;
+    [
+      ["market", "avg_price_per_unit"], ["market", "low_price_per_unit"], ["market", "high_price_per_unit"],
+      ["market", "estimated_total"], ["market", "rent_per_month"], ["market", "rent_low"], ["market", "rent_high"],
+      ["price_proof", "asking_price"], ["price_proof", "fair_price_min"], ["price_proof", "fair_price_max"],
+      ["negotiation", "suggested_first_offer"], ["negotiation", "deal_zone_min"], ["negotiation", "deal_zone_max"], ["negotiation", "upper_limit"],
+    ].forEach((path) => setNestedNumber(parsed, path, convert));
+
+    if (Array.isArray(parsed.comparable_signals)) {
+      parsed.comparable_signals = parsed.comparable_signals.map((item) => {
+        if (!item || typeof item !== "object") return item;
+        const row = item as Record<string, unknown>;
+        const price = asNumber(row.price_per_unit);
+        return { ...row, price_per_unit: price === null ? row.price_per_unit : roundMoney(price / fx), currency: displayCurrency };
+      });
+    }
+  }
+
+  if (stated !== null) {
+    const statedFx = fxRateToDisplay(statedCurrency, displayCurrency);
+    proof.asking_price = roundMoney(statedCurrency === displayCurrency ? stated : stated / statedFx);
+  }
+
+  market.currency = displayCurrency;
+  negotiation.currency = displayCurrency;
+  if (Array.isArray(parsed.comparable_signals)) {
+    parsed.comparable_signals = parsed.comparable_signals.map((item) => (
+      item && typeof item === "object" ? { ...(item as Record<string, unknown>), currency: displayCurrency } : item
+    ));
+  }
+
+  const fairMinDisplay = asNumber(proof.fair_price_min);
+  const fairMaxDisplay = asNumber(proof.fair_price_max);
+  const askingDisplay = asNumber(proof.asking_price);
+  parsed.local_reference = {
+    currency: localCurrency,
+    fx_rate_to_display: Number(fx.toFixed(4)),
+    fx_date: new Date().toISOString().slice(0, 10),
+    asking_price_local: askingDisplay === null ? null : roundMoney(askingDisplay * fx),
+    fair_price_min_local: fairMinDisplay === null ? null : roundMoney(fairMinDisplay * fx),
+    fair_price_max_local: fairMaxDisplay === null ? null : roundMoney(fairMaxDisplay * fx),
+    note_ru: `Курс: 1 ${displayCurrency} ≈ ${Number(fx.toFixed(4))} ${localCurrency} на ${new Date().toISOString().slice(0, 10)}`,
+    note_en: `FX: 1 ${displayCurrency} ≈ ${Number(fx.toFixed(4))} ${localCurrency} on ${new Date().toISOString().slice(0, 10)}`,
+  };
 }
 
 async function firecrawlSearch(query: string, lang: string): Promise<WebFinding[]> {
@@ -350,6 +561,11 @@ Deno.serve(async (req) => {
       parsed.lng = lng;
     }
     parsed.purpose = parsed.purpose === "rent" ? "rent" : normalizedPurpose;
+    normalizeCurrencyLayer(parsed, {
+      contextText: [query, geoContext, webQuery, webBlock].filter(Boolean).join("\n"),
+      userPrice,
+      area,
+    });
 
     // Attach the sources we actually fed in (if AI didn't echo them) for transparency
     if (!Array.isArray(parsed.sources) || (parsed.sources as unknown[]).length === 0) {
