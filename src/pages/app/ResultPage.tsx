@@ -523,30 +523,6 @@ export default function ResultPage() {
           </Section>
         )}
 
-        {/* Media gallery */}
-        <Section className="lg:col-span-5" title={t("result.media")}>
-          <div className="grid grid-cols-3 gap-2">
-            {galleryImages.map((img, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "rounded-2xl overflow-hidden bg-secondary",
-                  i === 0 && "col-span-3 aspect-[16/10]",
-                  i > 0 && "aspect-square"
-                )}
-              >
-                <img
-                  src={img}
-                  alt={`Property ${i + 1}`}
-                  loading="lazy"
-                  width={800}
-                  height={600}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
-        </Section>
 
         {/* Red flags */}
         {result.red_flags?.length > 0 && (
