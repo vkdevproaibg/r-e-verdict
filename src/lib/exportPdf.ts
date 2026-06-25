@@ -220,38 +220,44 @@ function buildHtml(result: ExportInput, lang: Lang): string {
   ];
   if (result.purpose) meta.push({ k: tr.purpose, v: result.purpose === "rent" ? tr.purposeRent : tr.purposeBuy });
 
+  // Each top-level child of #propa-pdf-root is treated as an atomic PDF block:
+  // it will never be split across pages (if too tall, only that block is sliced).
   return `
 <div id="propa-pdf-root" style="width:794px;background:#f8f5f0;color:#1f2126;font-family:'Inter','Helvetica Neue',Arial,sans-serif;">
 <style>
   #propa-pdf-root * { box-sizing:border-box; }
-  .page { padding:48px 56px; background:#f8f5f0; }
-  .header { display:flex; justify-content:space-between; align-items:center; padding-bottom:18px; border-bottom:1px solid #e6dfd3; }
+  #propa-pdf-root { padding:0; }
+  .pdf-block { background:transparent; }
+  .pdf-block + .pdf-block { margin-top:18px; }
+
+  .header { display:flex; justify-content:space-between; align-items:center; padding-bottom:14px; border-bottom:1px solid #e6dfd3; }
   .brand { font-weight:800; letter-spacing:0.22em; font-size:13px; color:#1f2126; }
   .brand .dot { display:inline-block;width:8px;height:8px;background:#b67a32;border-radius:50%;margin-right:10px;vertical-align:middle; }
   .header-meta { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#8a8275; }
-  .title-block { margin-top:32px; }
-  .eyebrow { font-size:10px; letter-spacing:0.28em; text-transform:uppercase; color:#b67a32; font-weight:600; }
-  .title { font-family:'Fraunces',Georgia,serif; font-size:36px; line-height:1.1; margin:10px 0 8px; letter-spacing:-0.02em; color:#1f2126; }
-  .subtitle { font-size:13px; color:#6a6358; max-width:560px; line-height:1.5; }
 
-  .verdict-card { margin-top:28px; border-radius:20px; padding:26px 28px; background:linear-gradient(135deg, ${pal.bg} 0%, #0d0f12 100%); color:#fff; position:relative; overflow:hidden; }
+  .title-block { padding-top:4px; }
+  .eyebrow { font-size:10px; letter-spacing:0.28em; text-transform:uppercase; color:#b67a32; font-weight:600; }
+  .title { font-family:'Fraunces',Georgia,serif; font-size:34px; line-height:1.1; margin:10px 0 8px; letter-spacing:-0.02em; color:#1f2126; }
+  .subtitle { font-size:13px; color:#6a6358; max-width:620px; line-height:1.5; }
+
+  .verdict-card { border-radius:20px; padding:26px 28px; background:linear-gradient(135deg, ${pal.bg} 0%, #0d0f12 100%); color:#fff; position:relative; overflow:hidden; }
   .verdict-card::after { content:""; position:absolute; right:-60px; top:-60px; width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, ${pal.accent}33 0%, transparent 70%); }
   .verdict-tag { display:inline-flex; align-items:center; gap:8px; font-size:10px; letter-spacing:0.24em; text-transform:uppercase; color:#e8e4dd; opacity:0.85; }
   .verdict-tag .pill { display:inline-block; width:8px; height:8px; border-radius:50%; background:${pal.accent}; box-shadow:0 0 12px ${pal.accent}aa; }
-  .verdict-headline { font-family:'Fraunces',Georgia,serif; font-size:28px; line-height:1.18; margin:14px 0 22px; max-width:640px; letter-spacing:-0.015em; }
+  .verdict-headline { font-family:'Fraunces',Georgia,serif; font-size:26px; line-height:1.18; margin:14px 0 22px; max-width:640px; letter-spacing:-0.015em; }
   .verdict-meta { display:flex; gap:36px; flex-wrap:wrap; }
   .vm-item { font-size:11px; }
   .vm-k { color:#bdb5a7; letter-spacing:0.16em; text-transform:uppercase; font-size:9px; margin-bottom:4px; }
   .vm-v { color:#fff; font-size:15px; font-weight:600; }
-  .verdict-label { font-family:'Fraunces',Georgia,serif; font-size:34px; color:${pal.accent}; font-weight:600; }
+  .verdict-label { font-family:'Fraunces',Georgia,serif; font-size:32px; color:${pal.accent}; font-weight:600; }
 
-  .property-strip { margin-top:18px; background:#fff; border:1px solid #ece5d6; border-radius:14px; padding:16px 20px; display:flex; gap:16px; align-items:center; }
+  .property-strip { background:#fff; border:1px solid #ece5d6; border-radius:14px; padding:16px 20px; display:flex; gap:16px; align-items:center; }
   .property-strip .ic { width:36px;height:36px;border-radius:10px;background:#f3ecdb;display:inline-flex;align-items:center;justify-content:center;color:#b67a32;font-size:18px;font-weight:700; }
   .property-strip .pk { font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:#8a8275; }
   .property-strip .pv { font-size:14px; color:#1f2126; margin-top:2px; }
 
-  .section { margin-top:34px; }
-  .section-title { font-family:'Fraunces',Georgia,serif; font-size:20px; color:#1f2126; margin-bottom:14px; letter-spacing:-0.01em; }
+  .section { background:transparent; }
+  .section-title { font-family:'Fraunces',Georgia,serif; font-size:20px; color:#1f2126; margin:0 0 14px; letter-spacing:-0.01em; }
   .section-title .num { color:#b67a32; font-size:12px; letter-spacing:0.2em; margin-right:10px; vertical-align:middle; }
 
   .market-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
@@ -260,7 +266,7 @@ function buildHtml(result: ExportInput, lang: Lang): string {
   .mc-v { font-size:18px; font-weight:600; color:#1f2126; margin-top:4px; font-feature-settings:"tnum"; }
   .market-comment { margin-top:12px; padding:14px 16px; background:#fbf6e9; border-left:3px solid #b67a32; border-radius:8px; font-size:12px; color:#5a5142; line-height:1.55; }
 
-  .score-row { display:grid; grid-template-columns:140px 1fr 44px; gap:14px; align-items:center; padding:8px 0; border-bottom:1px dashed #ebe3d3; }
+  .score-row { display:grid; grid-template-columns:160px 1fr 44px; gap:14px; align-items:center; padding:8px 0; border-bottom:1px dashed #ebe3d3; }
   .score-row:last-child { border-bottom:none; }
   .score-label { font-size:12px; color:#3a352c; }
   .score-bar { height:8px; background:#ece5d6; border-radius:99px; overflow:hidden; }
@@ -268,7 +274,7 @@ function buildHtml(result: ExportInput, lang: Lang): string {
   .score-val { font-size:13px; font-weight:600; text-align:right; color:#1f2126; font-feature-settings:"tnum"; }
 
   .bullets { list-style:none; padding:0; margin:0; }
-  .bullets li { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #efe9da; font-size:12.5px; line-height:1.55; color:#2a2620; }
+  .bullets li { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #efe9da; font-size:12.5px; line-height:1.55; color:#2a2620; page-break-inside:avoid; }
   .bullets li:last-child { border-bottom:none; }
   .bullet-mark { flex:0 0 22px; height:22px; border-radius:50%; background:#f3ecdb; color:#b67a32; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
   .bullets.numbered .bullet-mark { background:#1f2126; color:#fff; }
@@ -283,22 +289,20 @@ function buildHtml(result: ExportInput, lang: Lang): string {
   .source-title { font-size:12px; color:#1f2126; line-height:1.4; }
   .source-url { font-size:10px; color:#8a8275; margin-top:2px; word-break:break-all; }
 
-  .footer { margin-top:42px; padding-top:18px; border-top:1px solid #e6dfd3; display:flex; justify-content:space-between; font-size:10px; color:#8a8275; }
-  .disclaimer { font-size:10px; color:#9a9285; margin-top:18px; line-height:1.5; font-style:italic; }
+  .disclaimer { font-size:10px; color:#8a8275; line-height:1.5; font-style:italic; padding:14px 16px; background:#f1ebdc; border-radius:10px; }
 </style>
 
-<div class="page">
-  <div class="header">
+  <div class="pdf-block header">
     <div class="brand"><span class="dot"></span>${tr.brand}</div>
     <div class="header-meta">${esc(tr.title)}</div>
   </div>
 
-  <div class="title-block">
+  <div class="pdf-block title-block">
     <div class="eyebrow">${esc(tr.subtitle)}</div>
     <h1 class="title">${esc(tr.title)}</h1>
   </div>
 
-  <div class="verdict-card">
+  <div class="pdf-block verdict-card">
     <div class="verdict-tag"><span class="pill"></span>${esc(tr.verdict)}</div>
     <div style="display:flex; align-items:baseline; gap:18px; margin-top:6px;">
       <div class="verdict-label">${esc(vLabel)}</div>
@@ -310,7 +314,7 @@ function buildHtml(result: ExportInput, lang: Lang): string {
   </div>
 
   ${result.geo_address ? `
-    <div class="property-strip">
+    <div class="pdf-block property-strip">
       <div class="ic">◆</div>
       <div>
         <div class="pk">${esc(tr.address)}</div>
@@ -320,7 +324,7 @@ function buildHtml(result: ExportInput, lang: Lang): string {
   ` : ""}
 
   ${marketRows.length ? `
-    <div class="section">
+    <div class="pdf-block section">
       <div class="section-title"><span class="num">01</span>${esc(tr.market)}</div>
       <div class="market-grid">
         ${marketRows.map(r => `<div class="market-cell"><div class="mc-k">${esc(r.k)}</div><div class="mc-v">${esc(r.v)}</div></div>`).join("")}
@@ -330,14 +334,14 @@ function buildHtml(result: ExportInput, lang: Lang): string {
   ` : ""}
 
   ${scoresHtml ? `
-    <div class="section">
+    <div class="pdf-block section">
       <div class="section-title"><span class="num">02</span>${esc(tr.scores)}</div>
       ${scoresHtml}
     </div>
   ` : ""}
 
   ${(result.good?.length || result.watch?.length) ? `
-    <div class="section">
+    <div class="pdf-block section">
       <div class="two-col">
         ${result.good?.length ? `<div class="panel"><h4>${esc(tr.good)}</h4>${bullets(result.good)}</div>` : ""}
         ${result.watch?.length ? `<div class="panel"><h4>${esc(tr.watch)}</h4>${bullets(result.watch)}</div>` : ""}
@@ -346,45 +350,40 @@ function buildHtml(result: ExportInput, lang: Lang): string {
   ` : ""}
 
   ${result.reasons?.length ? `
-    <div class="section">
+    <div class="pdf-block section">
       <div class="section-title"><span class="num">03</span>${esc(tr.reasons)}</div>
       ${bullets(result.reasons)}
     </div>
   ` : ""}
 
   ${result.red_flags?.length ? `
-    <div class="section">
+    <div class="pdf-block section">
       <div class="section-title"><span class="num">04</span>${esc(tr.redFlags)}</div>
       ${bullets(result.red_flags)}
     </div>
   ` : ""}
 
   ${result.next_steps?.length ? `
-    <div class="section">
+    <div class="pdf-block section">
       <div class="section-title"><span class="num">05</span>${esc(tr.nextSteps)}</div>
       ${bullets(result.next_steps, true)}
     </div>
   ` : ""}
 
   ${sourcesHtml ? `
-    <div class="section">
+    <div class="pdf-block section">
       <div class="section-title"><span class="num">06</span>${esc(tr.sources)}</div>
       ${sourcesHtml}
     </div>
   ` : ""}
 
-  <div class="disclaimer">${esc(tr.disclaimer)}</div>
-
-  <div class="footer">
-    <div>${esc(tr.brand)} · ${esc(tr.title)}</div>
-    <div>${esc(tr.generated)}: ${new Date().toLocaleString(lang === "ru" ? "ru-RU" : "en-US")}</div>
-  </div>
-</div>
+  <div class="pdf-block disclaimer">${esc(tr.disclaimer)}</div>
 </div>`;
 }
 
 export async function exportAnalysisPdf(result: ExportInput, lang: Lang = "ru") {
   const html = buildHtml(result, lang);
+  const tr = T[lang];
 
   // Mount offscreen
   const host = document.createElement("div");
@@ -395,49 +394,146 @@ export async function exportAnalysisPdf(result: ExportInput, lang: Lang = "ru") 
   host.innerHTML = html;
   document.body.appendChild(host);
 
-  const node = host.querySelector("#propa-pdf-root") as HTMLElement;
+  const root = host.querySelector("#propa-pdf-root") as HTMLElement;
 
   try {
-    // Wait a tick for fonts
     await (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready?.catch(() => {});
-    await new Promise((r) => setTimeout(r, 50));
-
-    const canvas = await html2canvas(node, {
-      scale: 2,
-      backgroundColor: "#f8f5f0",
-      useCORS: true,
-      logging: false,
-      windowWidth: node.scrollWidth,
-    });
+    await new Promise((r) => setTimeout(r, 60));
 
     const pdf = new jsPDF({ unit: "pt", format: "a4", compress: true });
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
+    const pageW = pdf.internal.pageSize.getWidth();    // 595.28
+    const pageH = pdf.internal.pageSize.getHeight();   // 841.89
 
-    const imgW = pageW;
-    const imgH = (canvas.height * imgW) / canvas.width;
+    // Page geometry
+    const marginX = 36;
+    const marginTop = 56;     // room for running header
+    const marginBottom = 44;  // room for page number
+    const contentW = pageW - marginX * 2;
+    const contentH = pageH - marginTop - marginBottom;
+    const blockGap = 14;
+    const bgColor = "#f8f5f0";
 
-    if (imgH <= pageH) {
-      pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, imgW, imgH);
-    } else {
-      // Multi-page: slice canvas into page-height chunks
-      const pageHpx = (canvas.width * pageH) / pageW;
-      let offset = 0;
-      let pageIdx = 0;
-      while (offset < canvas.height) {
-        const sliceH = Math.min(pageHpx, canvas.height - offset);
-        const slice = document.createElement("canvas");
-        slice.width = canvas.width;
-        slice.height = sliceH;
-        const ctx = slice.getContext("2d")!;
-        ctx.fillStyle = "#f8f5f0";
-        ctx.fillRect(0, 0, slice.width, slice.height);
-        ctx.drawImage(canvas, 0, -offset);
-        if (pageIdx > 0) pdf.addPage();
-        const sliceImgH = (sliceH * imgW) / canvas.width;
-        pdf.addImage(slice.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, imgW, sliceImgH);
-        offset += sliceH;
-        pageIdx += 1;
+    pdf.setFillColor(bgColor);
+    pdf.rect(0, 0, pageW, pageH, "F");
+
+    const drawChrome = (pageNum: number, totalPages: number) => {
+      // Running header (brand)
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(8);
+      pdf.setTextColor(31, 33, 38);
+      pdf.text(tr.brand, marginX, 32);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(138, 130, 117);
+      pdf.text(tr.title, pageW - marginX, 32, { align: "right" });
+      // Hairline
+      pdf.setDrawColor(230, 223, 211);
+      pdf.setLineWidth(0.4);
+      pdf.line(marginX, 40, pageW - marginX, 40);
+      // Footer
+      pdf.setFontSize(8);
+      pdf.setTextColor(138, 130, 117);
+      pdf.text(
+        `${tr.brand} · ${new Date().toLocaleDateString(lang === "ru" ? "ru-RU" : "en-US")}`,
+        marginX, pageH - 20
+      );
+      pdf.text(
+        `${tr.page} ${pageNum} / ${totalPages}`,
+        pageW - marginX, pageH - 20, { align: "right" }
+      );
+    };
+
+    const blocks = Array.from(root.querySelectorAll<HTMLElement>(":scope > .pdf-block"));
+
+    // Render each block to its own canvas first
+    const rendered: { canvas: HTMLCanvasElement; h: number }[] = [];
+    for (const block of blocks) {
+      const canvas = await html2canvas(block, {
+        scale: 2,
+        backgroundColor: null,
+        useCORS: true,
+        logging: false,
+        windowWidth: root.scrollWidth,
+      });
+      const scaled = (canvas.width > 0) ? (contentW / canvas.width) : 1;
+      const hPt = canvas.height * scaled;
+      rendered.push({ canvas, h: hPt });
+    }
+
+    // First pass: layout to compute total pages
+    type Placed = { canvas: HTMLCanvasElement; page: number; y: number; h: number; sliceY?: number; sliceH?: number };
+    const placed: Placed[] = [];
+    let page = 1;
+    let cursorY = marginTop;
+    for (const r of rendered) {
+      // Block fits whole? place on current page (or next)
+      if (r.h <= contentH) {
+        if (cursorY + r.h > marginTop + contentH) {
+          page += 1;
+          cursorY = marginTop;
+        }
+        placed.push({ canvas: r.canvas, page, y: cursorY, h: r.h });
+        cursorY += r.h + blockGap;
+      } else {
+        // Oversized block — slice across pages
+        let remaining = r.h;
+        let srcY = 0;
+        // If anything is already on this page, push to next
+        if (cursorY !== marginTop) {
+          page += 1;
+          cursorY = marginTop;
+        }
+        const scaled = contentW / r.canvas.width;
+        while (remaining > 0) {
+          const avail = marginTop + contentH - cursorY;
+          const take = Math.min(avail, remaining);
+          const takePx = take / scaled;
+          placed.push({
+            canvas: r.canvas,
+            page,
+            y: cursorY,
+            h: take,
+            sliceY: srcY,
+            sliceH: takePx,
+          });
+          remaining -= take;
+          srcY += takePx;
+          if (remaining > 0) {
+            page += 1;
+            cursorY = marginTop;
+          } else {
+            cursorY += take + blockGap;
+          }
+        }
+      }
+    }
+    const totalPages = page;
+
+    // Second pass: actually paint pages + chrome
+    for (let p = 1; p <= totalPages; p++) {
+      if (p > 1) pdf.addPage();
+      pdf.setFillColor(bgColor);
+      pdf.rect(0, 0, pageW, pageH, "F");
+      drawChrome(p, totalPages);
+
+      const items = placed.filter((x) => x.page === p);
+      for (const it of items) {
+        if (it.sliceH != null && it.sliceY != null) {
+          // Render the slice via temporary canvas
+          const slice = document.createElement("canvas");
+          slice.width = it.canvas.width;
+          slice.height = Math.max(1, Math.round(it.sliceH));
+          const ctx = slice.getContext("2d")!;
+          ctx.drawImage(it.canvas, 0, -it.sliceY);
+          pdf.addImage(
+            slice.toDataURL("image/jpeg", 0.95),
+            "JPEG", marginX, it.y, contentW, it.h
+          );
+        } else {
+          pdf.addImage(
+            it.canvas.toDataURL("image/jpeg", 0.95),
+            "JPEG", marginX, it.y, contentW, it.h
+          );
+        }
       }
     }
 
@@ -451,3 +547,4 @@ export async function exportAnalysisPdf(result: ExportInput, lang: Lang = "ru") 
     document.body.removeChild(host);
   }
 }
+
