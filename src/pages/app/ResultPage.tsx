@@ -157,7 +157,7 @@ const verdictTokens: Record<Verdict, { bg: string; text: string; ring: string; d
   red: { bg: "bg-verdict-red/10", text: "text-verdict-red", ring: "ring-verdict-red/30", dot: "bg-verdict-red" },
 };
 
-const galleryImages = [heroExterior, heroInterior, heroCity];
+
 
 export default function ResultPage() {
   const { id } = useParams();
