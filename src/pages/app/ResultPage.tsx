@@ -32,9 +32,6 @@ import { useSaveAnalysis, type Verdict } from "@/hooks/useCloudData";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { exportAnalysisPdf } from "@/lib/exportPdf";
-import heroExterior from "@/assets/hero-exterior.jpg";
-import heroInterior from "@/assets/hero-interior.jpg";
-import heroCity from "@/assets/hero-city.jpg";
 
 interface MarketBlock {
   currency?: string;
