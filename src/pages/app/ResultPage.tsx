@@ -32,9 +32,6 @@ import { useSaveAnalysis, type Verdict } from "@/hooks/useCloudData";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { exportAnalysisPdf } from "@/lib/exportPdf";
-import heroExterior from "@/assets/hero-exterior.jpg";
-import heroInterior from "@/assets/hero-interior.jpg";
-import heroCity from "@/assets/hero-city.jpg";
 
 interface MarketBlock {
   currency?: string;
@@ -160,7 +157,7 @@ const verdictTokens: Record<Verdict, { bg: string; text: string; ring: string; d
   red: { bg: "bg-verdict-red/10", text: "text-verdict-red", ring: "ring-verdict-red/30", dot: "bg-verdict-red" },
 };
 
-const galleryImages = [heroExterior, heroInterior, heroCity];
+
 
 export default function ResultPage() {
   const { id } = useParams();
@@ -505,7 +502,7 @@ export default function ResultPage() {
 
         {/* Reasons */}
         {result.reasons?.length > 0 && (
-          <Section className="lg:col-span-7" title={t("result.reasons")}>
+          <Section className="lg:col-span-12" title={t("result.reasons")}>
             <div className="space-y-2">
               {result.reasons.map((r, i) => (
                 <motion.div
@@ -523,30 +520,6 @@ export default function ResultPage() {
           </Section>
         )}
 
-        {/* Media gallery */}
-        <Section className="lg:col-span-5" title={t("result.media")}>
-          <div className="grid grid-cols-3 gap-2">
-            {galleryImages.map((img, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "rounded-2xl overflow-hidden bg-secondary",
-                  i === 0 && "col-span-3 aspect-[16/10]",
-                  i > 0 && "aspect-square"
-                )}
-              >
-                <img
-                  src={img}
-                  alt={`Property ${i + 1}`}
-                  loading="lazy"
-                  width={800}
-                  height={600}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
-        </Section>
 
         {/* Red flags */}
         {result.red_flags?.length > 0 && (
