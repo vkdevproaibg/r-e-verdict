@@ -656,28 +656,35 @@ export default function ResultPage() {
 
       {/* Sales tools sheet (agent) */}
       <Sheet open={salesOpen} onOpenChange={setSalesOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{t("result.agentTools")}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 space-y-3 max-w-2xl mx-auto">
-            {result.agent_script?.client_message_ru && (
+        <SheetContent
+          side="bottom"
+          className="rounded-t-3xl max-h-[90vh] h-[90vh] flex flex-col p-0 gap-0"
+        >
+          <div className="shrink-0 px-6 pt-6 pb-4 border-b border-border bg-background">
+            <SheetHeader>
+              <SheetTitle>{t("result.agentTools")}</SheetTitle>
+            </SheetHeader>
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 py-5">
+            <div className="space-y-3 max-w-2xl mx-auto pb-8">
+              {result.agent_script?.client_message_ru && (
+                <ToolCard
+                  title={t("result.agent.clientMessage")}
+                  text={(lang === "ru" ? result.agent_script.client_message_ru : result.agent_script.client_message_en) || ""}
+                />
+              )}
+              <ToolCard title={lang === "ru" ? "Питч за 30 секунд" : "30-second pitch"} text={pitchText} />
               <ToolCard
-                title={t("result.agent.clientMessage")}
-                text={(lang === "ru" ? result.agent_script.client_message_ru : result.agent_script.client_message_en) || ""}
+                title={t("result.agent.talkingPoints")}
+                text={(result.negotiation?.arguments ?? []).map((a) => `• ${lang === "ru" ? a.ru : a.en}`).join("\n") ||
+                  (result.red_flags ?? []).map((r) => `• ${lang === "ru" ? r.ru : r.en}`).join("\n") ||
+                  (lang === "ru" ? "Сильных рычагов нет — объект ликвиден." : "No strong levers — property is liquid.")}
               />
-            )}
-            <ToolCard title={lang === "ru" ? "Питч за 30 секунд" : "30-second pitch"} text={pitchText} />
-            <ToolCard
-              title={t("result.agent.talkingPoints")}
-              text={(result.negotiation?.arguments ?? []).map((a) => `• ${lang === "ru" ? a.ru : a.en}`).join("\n") ||
-                (result.red_flags ?? []).map((r) => `• ${lang === "ru" ? r.ru : r.en}`).join("\n") ||
-                (lang === "ru" ? "Сильных рычагов нет — объект ликвиден." : "No strong levers — property is liquid.")}
-            />
-            <ToolCard
-              title={lang === "ru" ? "Ответы на возражения" : "Objection killer"}
-              text={(result.reasons ?? []).map((r) => `Q: "Why?"\nA: ${lang === "ru" ? r.ru : r.en}`).join("\n\n") || "—"}
-            />
+              <ToolCard
+                title={lang === "ru" ? "Ответы на возражения" : "Objection killer"}
+                text={(result.reasons ?? []).map((r) => `Q: "Why?"\nA: ${lang === "ru" ? r.ru : r.en}`).join("\n\n") || "—"}
+              />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
