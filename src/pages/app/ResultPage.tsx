@@ -505,7 +505,7 @@ export default function ResultPage() {
 
         {/* Reasons */}
         {result.reasons?.length > 0 && (
-          <Section className="lg:col-span-7" title={t("result.reasons")}>
+          <Section className="lg:col-span-12" title={t("result.reasons")}>
             <div className="space-y-2">
               {result.reasons.map((r, i) => (
                 <motion.div
