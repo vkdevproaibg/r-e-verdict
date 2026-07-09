@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Sparkles, CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
+import { Sparkles, CheckCircle2, AlertTriangle, ArrowRight, ShieldCheck, Mail, Phone, Send } from "lucide-react";
 import { type Verdict } from "@/hooks/useCloudData";
 import { cn } from "@/lib/utils";
-import heroExterior from "@/assets/hero-exterior.jpg";
-import heroInterior from "@/assets/hero-interior.jpg";
-import heroCity from "@/assets/hero-city.jpg";
+import { toast } from "sonner";
 
 interface AIResult {
   verdict: Verdict;
@@ -18,6 +16,7 @@ interface AIResult {
   reasons: { ru: string; en: string }[];
   red_flags: { ru: string; en: string; severity?: string }[];
   next_steps: { ru: string; en: string }[];
+  price_proof?: { display_currency?: string; fair_price_min?: number; fair_price_max?: number };
 }
 
 const verdictMeta: Record<Verdict, { bg: string; text: string; ring: string; dot: string; label: string }> = {
@@ -26,10 +25,32 @@ const verdictMeta: Record<Verdict, { bg: string; text: string; ring: string; dot
   red: { bg: "bg-verdict-red/10", text: "text-verdict-red", ring: "ring-verdict-red/30", dot: "bg-verdict-red", label: "Walk away" },
 };
 
+interface AgentBrand {
+  name?: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  activeListings?: number;
+}
+
+function loadAgent(): AgentBrand {
+  try {
+    const p = JSON.parse(localStorage.getItem("propaai_profile") ?? "{}");
+    return {
+      name: p.name || p.fullName,
+      company: p.company,
+      email: p.email,
+      phone: p.phone,
+    };
+  } catch { return {}; }
+}
+
 export default function SharePage() {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
   const [result, setResult] = useState<AIResult | null>(null);
+  const [form, setForm] = useState({ name: "", contact: "", note: "" });
+  const [sent, setSent] = useState(false);
   const lang = i18n.language === "ru" ? "ru" : "en";
 
   useEffect(() => {
@@ -38,6 +59,23 @@ export default function SharePage() {
     const data = raw ?? fallback;
     if (data) setResult(JSON.parse(data));
   }, [id]);
+
+  const agent = useMemo(loadAgent, []);
+  const activityLabel = (agent.activeListings ?? 0) >= 3 ? "Активно ведёт объекты" : "Верифицированный агент";
+
+  const submitLead = () => {
+    if (!form.name.trim() || !form.contact.trim()) {
+      toast.error("Укажите имя и контакт");
+      return;
+    }
+    try {
+      const leads = JSON.parse(localStorage.getItem("propaai_leads") ?? "[]");
+      leads.push({ id, at: Date.now(), ...form });
+      localStorage.setItem("propaai_leads", JSON.stringify(leads));
+    } catch { /* ignore */ }
+    setSent(true);
+    toast.success("Заявка отправлена агенту");
+  };
 
   if (!result) {
     return (
@@ -77,9 +115,24 @@ export default function SharePage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-5 lg:px-8 py-10 lg:py-16">
-        {/* Presented by */}
-        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-          {t("result.presentedBy")} · Propa AI Agent
+        {/* Presented by agent */}
+        <div className="rounded-3xl border border-border bg-card p-5 lg:p-6 shadow-soft">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            {t("result.presentedBy")}
+          </div>
+          <div className="mt-2 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="font-serif-display text-2xl lg:text-3xl leading-tight truncate">
+                {agent.name || "Propa Agent"}
+              </div>
+              {agent.company && (
+                <div className="text-sm text-muted-foreground mt-0.5 truncate">{agent.company}</div>
+              )}
+              <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-accent">
+                <ShieldCheck className="h-3.5 w-3.5" /> {activityLabel}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Hero verdict */}
@@ -87,7 +140,7 @@ export default function SharePage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className={cn("mt-3 rounded-3xl border ring-1 p-6 lg:p-10", v.bg, v.ring, "border-transparent")}
+          className={cn("mt-6 rounded-3xl border ring-1 p-6 lg:p-10", v.bg, v.ring, "border-transparent")}
         >
           <div className={cn("text-[11px] uppercase tracking-widest font-semibold inline-flex items-center gap-1.5", v.text)}>
             <Sparkles className="h-3 w-3" />
@@ -97,31 +150,12 @@ export default function SharePage() {
           <h1 className="mt-3 text-3xl lg:text-5xl font-semibold tracking-tight leading-[1.1]">
             {headline}
           </h1>
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Metric label="Score" value={`${result.score}`} accent />
             <Metric label="Confidence" value={`${result.confidence}%`} />
-            <Metric label="Price vs market" value="−4%" />
-            <Metric label="Liquidity" value="High" />
+            <Metric label="Verdict" value={v.label} />
           </div>
         </motion.div>
-
-        {/* Media */}
-        <section className="mt-10">
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-3 aspect-[16/9] rounded-2xl overflow-hidden bg-secondary">
-              <img src={heroExterior} alt="" loading="lazy" className="h-full w-full object-cover" />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden bg-secondary">
-              <img src={heroInterior} alt="" loading="lazy" className="h-full w-full object-cover" />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden bg-secondary">
-              <img src={heroCity} alt="" loading="lazy" className="h-full w-full object-cover" />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden bg-secondary">
-              <img src={heroExterior} alt="" loading="lazy" className="h-full w-full object-cover" />
-            </div>
-          </div>
-        </section>
 
         {/* Reasons */}
         {result.reasons?.length > 0 && (
@@ -152,6 +186,67 @@ export default function SharePage() {
             </div>
           </section>
         )}
+
+        {/* Contact agent — lead form */}
+        <section className="mt-12 rounded-3xl border border-border bg-card p-6 lg:p-8 shadow-soft">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-accent">
+            <ShieldCheck className="h-3.5 w-3.5" /> Заявка идёт напрямую агенту
+          </div>
+          <h3 className="mt-2 font-serif-display text-2xl lg:text-3xl">
+            Интересно — связаться с агентом
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground max-w-md">
+            Ваш контакт получит только автор этого разбора. Мы не продаём и не перенаправляем лиды.
+          </p>
+
+          {sent ? (
+            <div className="mt-5 rounded-2xl bg-verdict-green/10 text-verdict-green p-4 text-sm inline-flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" /> Отправлено. Агент свяжется с вами.
+            </div>
+          ) : (
+            <div className="mt-5 grid gap-2 max-w-md">
+              <input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Ваше имя"
+                className="h-11 rounded-xl bg-background border border-border px-4 text-sm focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15"
+              />
+              <input
+                value={form.contact}
+                onChange={(e) => setForm({ ...form, contact: e.target.value })}
+                placeholder="Телефон или email"
+                className="h-11 rounded-xl bg-background border border-border px-4 text-sm focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15"
+              />
+              <textarea
+                value={form.note}
+                onChange={(e) => setForm({ ...form, note: e.target.value })}
+                placeholder="Комментарий (необязательно)"
+                rows={3}
+                className="rounded-xl bg-background border border-border px-4 py-3 text-sm focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 resize-none"
+              />
+              <button
+                onClick={submitLead}
+                className="mt-1 h-11 rounded-xl bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2"
+              >
+                <Send className="h-4 w-4" /> Отправить агенту
+              </button>
+              {(agent.email || agent.phone) && (
+                <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                  {agent.email && (
+                    <a href={`mailto:${agent.email}`} className="inline-flex items-center gap-1.5 hover:text-foreground">
+                      <Mail className="h-3.5 w-3.5" /> {agent.email}
+                    </a>
+                  )}
+                  {agent.phone && (
+                    <a href={`tel:${agent.phone}`} className="inline-flex items-center gap-1.5 hover:text-foreground">
+                      <Phone className="h-3.5 w-3.5" /> {agent.phone}
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
 
         {/* CTA */}
         <section className="mt-12 rounded-3xl bg-gradient-charcoal text-background p-8 lg:p-10 text-center">

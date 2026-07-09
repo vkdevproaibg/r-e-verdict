@@ -22,6 +22,7 @@ import { ru as ruLocale } from "date-fns/locale";
 import heroVilla from "@/assets/hero-villa.jpg";
 import libraryEmpty from "@/assets/library-empty.jpg";
 import { toast } from "sonner";
+import { FreshnessNudge } from "@/components/FreshnessNudge";
 
 type Tab = "address" | "link" | "location";
 
@@ -214,6 +215,9 @@ export default function HomePage() {
         {/* spacer to compensate desktop absolute card */}
         <div className="hidden lg:block lg:h-24" />
       </motion.section>
+
+      {/* Freshness nudge for agents */}
+      {role === "agent" && <FreshnessNudge />}
 
       {/* Library section */}
       <section className="mt-6 lg:mt-12">
