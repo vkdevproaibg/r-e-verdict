@@ -22,6 +22,7 @@ import { ru as ruLocale } from "date-fns/locale";
 import heroVilla from "@/assets/hero-villa.jpg";
 import libraryEmpty from "@/assets/library-empty.jpg";
 import { toast } from "sonner";
+import { FreshnessNudge } from "@/components/FreshnessNudge";
 
 type Tab = "address" | "link" | "location";
 
