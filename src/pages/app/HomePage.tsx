@@ -216,6 +216,9 @@ export default function HomePage() {
         <div className="hidden lg:block lg:h-24" />
       </motion.section>
 
+      {/* Freshness nudge for agents */}
+      {role === "agent" && <FreshnessNudge />}
+
       {/* Library section */}
       <section className="mt-6 lg:mt-12">
         {recent.length === 0 ? (
