@@ -36,8 +36,6 @@ import SettingsPage from "./pages/app/SettingsPage";
 
 import Saved from "./pages/buyer/Saved";
 import Alerts from "./pages/buyer/Alerts";
-import ClientsList from "./pages/agent/ClientsList";
-import ClientDetail from "./pages/agent/ClientDetail";
 
 import NotFound from "./pages/NotFound.tsx";
 
@@ -72,8 +70,9 @@ const App = () => (
                   <Route path="history" element={<HistoryPage />} />
                   <Route path="alerts" element={<Alerts />} />
                   <Route path="settings" element={<SettingsPage />} />
-                  <Route path="clients" element={<ClientsList />} />
-                  <Route path="clients/:id" element={<ClientDetail />} />
+                  {/* Legacy CRM (hidden until Agent Flow v2 lands) */}
+                  <Route path="clients" element={<Navigate to="/app" replace />} />
+                  <Route path="clients/:id" element={<Navigate to="/app" replace />} />
                 </Route>
 
                 {/* Full-screen flows inside shell */}
