@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      agents: {
+        Row: {
+          activity_score: number
+          company: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          name: string | null
+          paid_at: string | null
+          photo_url: string | null
+          region: string | null
+          subscription_status: Database["public"]["Enums"]["agent_subscription_status"]
+          telegram_chat_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_score?: number
+          company?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+          paid_at?: string | null
+          photo_url?: string | null
+          region?: string | null
+          subscription_status?: Database["public"]["Enums"]["agent_subscription_status"]
+          telegram_chat_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_score?: number
+          company?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+          paid_at?: string | null
+          photo_url?: string | null
+          region?: string | null
+          subscription_status?: Database["public"]["Enums"]["agent_subscription_status"]
+          telegram_chat_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           body: string | null
@@ -165,6 +216,69 @@ export type Database = {
           },
         ]
       }
+      client_packs: {
+        Row: {
+          agent_id: string
+          client_explanation: Json | null
+          client_name: string | null
+          created_at: string
+          id: string
+          is_public: boolean
+          next_step: string | null
+          object_id: string
+          price_argument: string | null
+          risks: Json | null
+          share_slug: string
+          updated_at: string
+          verdict_text: string | null
+        }
+        Insert: {
+          agent_id: string
+          client_explanation?: Json | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          is_public: boolean
+          next_step?: string | null
+          object_id: string
+          price_argument?: string | null
+          risks?: Json | null
+          share_slug: string
+          updated_at?: string
+          verdict_text?: string | null
+        }
+        Update: {
+          agent_id?: string
+          client_explanation?: Json | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          next_step?: string | null
+          object_id?: string
+          price_argument?: string | null
+          risks?: Json | null
+          share_slug?: string
+          updated_at?: string
+          verdict_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_packs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_packs_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           areas: string[] | null
@@ -210,9 +324,178 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_notifications: {
+        Row: {
+          channel: Database["public"]["Enums"]["lead_notification_channel"]
+          created_at: string
+          error: string | null
+          id: string
+          lead_id: string
+          status: Database["public"]["Enums"]["lead_notification_status"]
+        }
+        Insert: {
+          channel: Database["public"]["Enums"]["lead_notification_channel"]
+          created_at?: string
+          error?: string | null
+          id?: string
+          lead_id: string
+          status: Database["public"]["Enums"]["lead_notification_status"]
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["lead_notification_channel"]
+          created_at?: string
+          error?: string | null
+          id?: string
+          lead_id?: string
+          status?: Database["public"]["Enums"]["lead_notification_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_notifications_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          agent_id: string
+          client_pack_id: string
+          contact_name: string
+          contact_phone_or_email: string
+          created_at: string
+          id: string
+          is_internal: boolean
+          message: string | null
+          object_id: string
+        }
+        Insert: {
+          agent_id: string
+          client_pack_id: string
+          contact_name: string
+          contact_phone_or_email: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          message?: string | null
+          object_id: string
+        }
+        Update: {
+          agent_id?: string
+          client_pack_id?: string
+          contact_name?: string
+          contact_phone_or_email?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          message?: string | null
+          object_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_client_pack_id_fkey"
+            columns: ["client_pack_id"]
+            isOneToOne: false
+            referencedRelation: "client_packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      object_statuses_log: {
+        Row: {
+          confirmed_by: string
+          created_at: string
+          id: string
+          object_id: string
+          status: Database["public"]["Enums"]["object_status"]
+        }
+        Insert: {
+          confirmed_by: string
+          created_at?: string
+          id?: string
+          object_id: string
+          status: Database["public"]["Enums"]["object_status"]
+        }
+        Update: {
+          confirmed_by?: string
+          created_at?: string
+          id?: string
+          object_id?: string
+          status?: Database["public"]["Enums"]["object_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "object_statuses_log_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "object_statuses_log_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paywall_events: {
+        Row: {
+          agent_id: string
+          clicked_at: string
+          id: string
+          object_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          clicked_at?: string
+          id?: string
+          object_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          clicked_at?: string
+          id?: string
+          object_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paywall_events_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paywall_events_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       properties: {
         Row: {
           address: string | null
+          agent_id: string | null
           area_sqm: number | null
           bathrooms: number | null
           bedrooms: number | null
@@ -220,16 +503,24 @@ export type Database = {
           cover_url: string | null
           created_at: string
           currency: string
+          deal_type: Database["public"]["Enums"]["object_deal_type"] | null
           description: string | null
           goal: Database["public"]["Enums"]["goal_t"] | null
           id: string
           is_demo: boolean
+          last_confirmed_at: string | null
           lat: number
           lng: number
           monthly_cost: number | null
+          object_status: Database["public"]["Enums"]["object_status"]
           owner_device_id: string | null
           price: number
+          property_type:
+            | Database["public"]["Enums"]["object_property_type"]
+            | null
           score: number | null
+          side: Database["public"]["Enums"]["object_side"] | null
+          source_type: Database["public"]["Enums"]["object_source_type"] | null
           title: string
           updated_at: string
           verdict: Database["public"]["Enums"]["verdict_t"] | null
@@ -237,6 +528,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          agent_id?: string | null
           area_sqm?: number | null
           bathrooms?: number | null
           bedrooms?: number | null
@@ -244,16 +536,24 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           currency?: string
+          deal_type?: Database["public"]["Enums"]["object_deal_type"] | null
           description?: string | null
           goal?: Database["public"]["Enums"]["goal_t"] | null
           id?: string
           is_demo?: boolean
+          last_confirmed_at?: string | null
           lat: number
           lng: number
           monthly_cost?: number | null
+          object_status?: Database["public"]["Enums"]["object_status"]
           owner_device_id?: string | null
           price: number
+          property_type?:
+            | Database["public"]["Enums"]["object_property_type"]
+            | null
           score?: number | null
+          side?: Database["public"]["Enums"]["object_side"] | null
+          source_type?: Database["public"]["Enums"]["object_source_type"] | null
           title: string
           updated_at?: string
           verdict?: Database["public"]["Enums"]["verdict_t"] | null
@@ -261,6 +561,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          agent_id?: string | null
           area_sqm?: number | null
           bathrooms?: number | null
           bedrooms?: number | null
@@ -268,22 +569,38 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           currency?: string
+          deal_type?: Database["public"]["Enums"]["object_deal_type"] | null
           description?: string | null
           goal?: Database["public"]["Enums"]["goal_t"] | null
           id?: string
           is_demo?: boolean
+          last_confirmed_at?: string | null
           lat?: number
           lng?: number
           monthly_cost?: number | null
+          object_status?: Database["public"]["Enums"]["object_status"]
           owner_device_id?: string | null
           price?: number
+          property_type?:
+            | Database["public"]["Enums"]["object_property_type"]
+            | null
           score?: number | null
+          side?: Database["public"]["Enums"]["object_side"] | null
+          source_type?: Database["public"]["Enums"]["object_source_type"] | null
           title?: string
           updated_at?: string
           verdict?: Database["public"]["Enums"]["verdict_t"] | null
           yield_pct?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "properties_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_properties: {
         Row: {
@@ -325,9 +642,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      agent_has_active_subscription: {
+        Args: { _agent_id: string }
+        Returns: boolean
+      }
+      current_agent_id: { Args: never; Returns: string }
     }
     Enums: {
+      agent_subscription_status: "none" | "trial" | "active"
       app_role: "agent" | "buyer"
       assignment_status:
         | "new"
@@ -338,6 +660,13 @@ export type Database = {
         | "offer"
         | "closed"
       goal_t: "live" | "invest" | "rent" | "business"
+      lead_notification_channel: "email" | "telegram"
+      lead_notification_status: "sent" | "failed"
+      object_deal_type: "sale" | "rent"
+      object_property_type: "residential" | "land" | "micro_commercial"
+      object_side: "own_listing" | "client_search"
+      object_source_type: "link" | "photo" | "pdf" | "manual"
+      object_status: "active" | "sold" | "withdrawn" | "rented"
       verdict_t: "green" | "yellow" | "red"
     }
     CompositeTypes: {
@@ -466,6 +795,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      agent_subscription_status: ["none", "trial", "active"],
       app_role: ["agent", "buyer"],
       assignment_status: [
         "new",
@@ -477,6 +807,13 @@ export const Constants = {
         "closed",
       ],
       goal_t: ["live", "invest", "rent", "business"],
+      lead_notification_channel: ["email", "telegram"],
+      lead_notification_status: ["sent", "failed"],
+      object_deal_type: ["sale", "rent"],
+      object_property_type: ["residential", "land", "micro_commercial"],
+      object_side: ["own_listing", "client_search"],
+      object_source_type: ["link", "photo", "pdf", "manual"],
+      object_status: ["active", "sold", "withdrawn", "rented"],
       verdict_t: ["green", "yellow", "red"],
     },
   },
