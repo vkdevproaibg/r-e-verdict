@@ -36,8 +36,6 @@ import SettingsPage from "./pages/app/SettingsPage";
 
 import Saved from "./pages/buyer/Saved";
 import Alerts from "./pages/buyer/Alerts";
-import ClientsList from "./pages/agent/ClientsList";
-import ClientDetail from "./pages/agent/ClientDetail";
 
 import NotFound from "./pages/NotFound.tsx";
 
