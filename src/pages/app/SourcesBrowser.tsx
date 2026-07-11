@@ -82,6 +82,14 @@ export default function SourcesBrowser() {
           <Sparkles className="h-3 w-3 text-accent" />
           {purpose === "rent" ? t("analyze.purpose.rent") : t("analyze.purpose.buy")}
         </div>
+        <button
+          onClick={() => navigate("/app/settings")}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 px-3 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:border-accent/40 hover:text-foreground transition-colors"
+          title={t("analyze.sources.changeCountry") ?? "Change country in Settings"}
+        >
+          <Globe className="h-3 w-3 text-accent" />
+          {countryLabel}
+        </button>
       </div>
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mt-4">
