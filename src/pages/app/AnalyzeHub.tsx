@@ -16,7 +16,6 @@ type Method = "address" | "location" | "url" | "voice" | "manual" | "document" |
 const methods: { key: Method; Icon: typeof MapPin; primary?: boolean }[] = [
   { key: "address", Icon: MapPin, primary: true },
   { key: "location", Icon: MapPin },
-  { key: "url", Icon: Link2 },
   { key: "voice", Icon: Mic },
   { key: "manual", Icon: Type },
 ];
