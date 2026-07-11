@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { ArrowRight, MapPin, Link2, Mic, FileText, Type, Sparkles, Globe } from "lucide-react";
+import { ArrowRight, MapPin, Mic, FileText, Type, Sparkles, Globe } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,6 @@ type Method = "address" | "location" | "url" | "voice" | "manual" | "document" |
 const methods: { key: Method; Icon: typeof MapPin; primary?: boolean }[] = [
   { key: "address", Icon: MapPin, primary: true },
   { key: "location", Icon: MapPin },
-  { key: "url", Icon: Link2 },
   { key: "voice", Icon: Mic },
   { key: "manual", Icon: Type },
 ];

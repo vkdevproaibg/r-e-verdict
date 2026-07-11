@@ -2,103 +2,13 @@ import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, ExternalLink, Check, GitCompare, Sparkles, Globe } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, Check, GitCompare, Sparkles, Globe, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-type Source = {
-  id: string;
-  name: string;
-  region: string;
-  url: string;
-  brand: string; // background tint hint
-};
-
-type Listing = {
-  id: string;
-  source: string;
-  title: string;
-  price: string;
-  beds: string;
-  area: string;
-  city: string;
-  url: string;
-  img: string;
-};
-
-const SOURCES: Source[] = [
-  { id: "zillow", name: "Zillow", region: "USA", url: "https://www.zillow.com", brand: "from-[#006AFF]/15 to-transparent" },
-  { id: "redfin", name: "Redfin", region: "USA", url: "https://www.redfin.com", brand: "from-[#A02021]/15 to-transparent" },
-  { id: "realtor", name: "Realtor.com", region: "USA", url: "https://www.realtor.com", brand: "from-[#D92228]/12 to-transparent" },
-  { id: "bayut", name: "Bayut", region: "UAE", url: "https://www.bayut.com", brand: "from-[#26B57F]/15 to-transparent" },
-  { id: "rightmove", name: "Rightmove", region: "UK", url: "https://www.rightmove.co.uk", brand: "from-[#00DEB6]/15 to-transparent" },
-  { id: "idealista", name: "Idealista", region: "EU", url: "https://www.idealista.com", brand: "from-[#E8A33D]/15 to-transparent" },
-];
-
-const FEEDS: Record<string, Listing[]> = {
-  zillow: [
-    { id: "z1", source: "zillow", title: "2BR Loft · Williamsburg", price: "$1,250,000", beds: "2 bd · 2 ba", area: "1,180 sqft", city: "Brooklyn, NY",
-      url: "https://www.zillow.com/homedetails/example-1/", img: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=640&q=70" },
-    { id: "z2", source: "zillow", title: "Brownstone · Park Slope", price: "$2,890,000", beds: "4 bd · 3 ba", area: "2,400 sqft", city: "Brooklyn, NY",
-      url: "https://www.zillow.com/homedetails/example-2/", img: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=640&q=70" },
-    { id: "z3", source: "zillow", title: "Modern Condo · LIC", price: "$985,000", beds: "1 bd · 1 ba", area: "780 sqft", city: "Queens, NY",
-      url: "https://www.zillow.com/homedetails/example-3/", img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=640&q=70" },
-    { id: "z4", source: "zillow", title: "Townhouse · Bed-Stuy", price: "$1,650,000", beds: "3 bd · 2 ba", area: "1,720 sqft", city: "Brooklyn, NY",
-      url: "https://www.zillow.com/homedetails/example-4/", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=640&q=70" },
-  ],
-  redfin: [
-    { id: "r1", source: "redfin", title: "Bay View Home", price: "$1,495,000", beds: "3 bd · 2 ba", area: "1,640 sqft", city: "San Francisco, CA",
-      url: "https://www.redfin.com/example-1", img: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=640&q=70" },
-    { id: "r2", source: "redfin", title: "Modern Hillside", price: "$2,150,000", beds: "4 bd · 3 ba", area: "2,300 sqft", city: "Oakland, CA",
-      url: "https://www.redfin.com/example-2", img: "https://images.unsplash.com/photo-1605114195644-9b1f8a23c0a4?w=640&q=70" },
-    { id: "r3", source: "redfin", title: "Sunny Bungalow", price: "$925,000", beds: "2 bd · 1 ba", area: "1,100 sqft", city: "Berkeley, CA",
-      url: "https://www.redfin.com/example-3", img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=640&q=70" },
-    { id: "r4", source: "redfin", title: "Loft Conversion", price: "$1,180,000", beds: "1 bd · 2 ba", area: "1,400 sqft", city: "Oakland, CA",
-      url: "https://www.redfin.com/example-4", img: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=640&q=70" },
-  ],
-  realtor: [
-    { id: "rl1", source: "realtor", title: "Lake View Estate", price: "$3,400,000", beds: "5 bd · 4 ba", area: "4,100 sqft", city: "Austin, TX",
-      url: "https://www.realtor.com/example-1", img: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=640&q=70" },
-    { id: "rl2", source: "realtor", title: "Downtown Penthouse", price: "$1,820,000", beds: "2 bd · 2 ba", area: "1,560 sqft", city: "Austin, TX",
-      url: "https://www.realtor.com/example-2", img: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=640&q=70" },
-    { id: "rl3", source: "realtor", title: "Suburban Family Home", price: "$680,000", beds: "4 bd · 2 ba", area: "2,000 sqft", city: "Round Rock, TX",
-      url: "https://www.realtor.com/example-3", img: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=640&q=70" },
-    { id: "rl4", source: "realtor", title: "Hill Country Ranch", price: "$1,250,000", beds: "3 bd · 3 ba", area: "2,800 sqft", city: "Dripping Springs, TX",
-      url: "https://www.realtor.com/example-4", img: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=640&q=70" },
-  ],
-  bayut: [
-    { id: "b1", source: "bayut", title: "Marina View Apartment", price: "AED 2,950,000", beds: "2 bd · 2 ba", area: "1,400 sqft", city: "Dubai Marina",
-      url: "https://www.bayut.com/example-1", img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=640&q=70" },
-    { id: "b2", source: "bayut", title: "Palm Jumeirah Villa", price: "AED 18,500,000", beds: "5 bd · 6 ba", area: "6,200 sqft", city: "Palm Jumeirah",
-      url: "https://www.bayut.com/example-2", img: "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=640&q=70" },
-    { id: "b3", source: "bayut", title: "Downtown Studio", price: "AED 1,150,000", beds: "Studio", area: "520 sqft", city: "Downtown Dubai",
-      url: "https://www.bayut.com/example-3", img: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=640&q=70" },
-    { id: "b4", source: "bayut", title: "JVC Townhouse", price: "AED 2,250,000", beds: "3 bd · 4 ba", area: "1,950 sqft", city: "Jumeirah Village Circle",
-      url: "https://www.bayut.com/example-4", img: "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=640&q=70" },
-  ],
-  rightmove: [
-    { id: "rm1", source: "rightmove", title: "Victorian Terrace", price: "£785,000", beds: "3 bd · 2 ba", area: "1,250 sqft", city: "London, UK",
-      url: "https://www.rightmove.co.uk/example-1", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=640&q=70" },
-    { id: "rm2", source: "rightmove", title: "Riverside Flat", price: "£550,000", beds: "2 bd · 1 ba", area: "780 sqft", city: "London, UK",
-      url: "https://www.rightmove.co.uk/example-2", img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=640&q=70" },
-    { id: "rm3", source: "rightmove", title: "Cotswolds Cottage", price: "£625,000", beds: "3 bd · 2 ba", area: "1,400 sqft", city: "Stroud, UK",
-      url: "https://www.rightmove.co.uk/example-3", img: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=640&q=70" },
-    { id: "rm4", source: "rightmove", title: "Modern Mews", price: "£1,250,000", beds: "4 bd · 3 ba", area: "1,800 sqft", city: "London, UK",
-      url: "https://www.rightmove.co.uk/example-4", img: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=640&q=70" },
-  ],
-  idealista: [
-    { id: "i1", source: "idealista", title: "Ático con terraza", price: "€890,000", beds: "3 bd · 2 ba", area: "140 m²", city: "Madrid, ES",
-      url: "https://www.idealista.com/example-1", img: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=640&q=70" },
-    { id: "i2", source: "idealista", title: "Piso reformado", price: "€520,000", beds: "2 bd · 1 ba", area: "85 m²", city: "Barcelona, ES",
-      url: "https://www.idealista.com/example-2", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=640&q=70" },
-    { id: "i3", source: "idealista", title: "Casa con jardín", price: "€1,150,000", beds: "4 bd · 3 ba", area: "220 m²", city: "Valencia, ES",
-      url: "https://www.idealista.com/example-3", img: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=640&q=70" },
-    { id: "i4", source: "idealista", title: "Loft moderno", price: "€395,000", beds: "1 bd · 1 ba", area: "65 m²", city: "Sevilla, ES",
-      url: "https://www.idealista.com/example-4", img: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=640&q=70" },
-  ],
-};
+import { sourcesForCountry, feedFor, type Listing } from "@/lib/sources";
+import { getAgentCountry, COUNTRIES } from "@/lib/countries";
 
 export default function SourcesBrowser() {
   const { t } = useTranslation();
@@ -109,11 +19,18 @@ export default function SourcesBrowser() {
 
   const [purpose, setPurpose] = useState<"buy" | "rent">(initialPurpose);
   const [area, setArea] = useState<string>(initialArea);
-  const [sourceId, setSourceId] = useState<string>(SOURCES[0].id);
+  const country = getAgentCountry();
+  const orderedSources = useMemo(() => sourcesForCountry(country), [country]);
+  const countryLabel = COUNTRIES.find((c) => c.code === country)?.label ?? "Auto";
+  const [sourceId, setSourceId] = useState<string>(orderedSources[0].id);
   const [selected, setSelected] = useState<string[]>([]);
+  const [manualUrl, setManualUrl] = useState<string>("");
 
-  const source = useMemo(() => SOURCES.find((s) => s.id === sourceId)!, [sourceId]);
-  const listings = FEEDS[sourceId] ?? [];
+  const source = useMemo(
+    () => orderedSources.find((s) => s.id === sourceId) ?? orderedSources[0],
+    [orderedSources, sourceId]
+  );
+  const listings = useMemo(() => feedFor(source), [source]);
 
   const toggle = (id: string) => {
     setSelected((cur) => {
@@ -165,6 +82,14 @@ export default function SourcesBrowser() {
           <Sparkles className="h-3 w-3 text-accent" />
           {purpose === "rent" ? t("analyze.purpose.rent") : t("analyze.purpose.buy")}
         </div>
+        <button
+          onClick={() => navigate("/app/settings")}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 px-3 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:border-accent/40 hover:text-foreground transition-colors"
+          title={t("analyze.sources.changeCountry") ?? "Change country in Settings"}
+        >
+          <Globe className="h-3 w-3 text-accent" />
+          {countryLabel}
+        </button>
       </div>
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mt-4">
@@ -206,6 +131,41 @@ export default function SourcesBrowser() {
         </div>
       </div>
 
+      {/* Direct listing URL — same entry point, no need for a separate card on Analyze hub */}
+      <div className="mt-6 rounded-2xl border border-accent/30 ring-1 ring-accent/10 bg-gradient-to-br from-card to-accent/[0.04] p-4">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+          <Link2 className="h-3.5 w-3.5 text-accent" />
+          {t("analyze.sources.urlTitle")}
+        </div>
+        <div className="mt-2 text-sm text-muted-foreground leading-snug">
+          {t("analyze.sources.urlSub")}
+        </div>
+        <div className="mt-3 flex flex-col sm:flex-row gap-2">
+          <Input
+            value={manualUrl}
+            onChange={(e) => setManualUrl(e.target.value)}
+            placeholder="https://www.zillow.com/homedetails/..."
+            className="h-11 rounded-xl flex-1"
+          />
+          <Button
+            onClick={() => {
+              const q = manualUrl.trim();
+              if (!q) { toast.info(t("analyze.sources.urlEmpty")); return; }
+              const p = new URLSearchParams();
+              p.set("kind", "url");
+              p.set("q", q);
+              p.set("purpose", purpose);
+              if (area.trim()) p.set("area", area.trim());
+              navigate(`/app/analyze/loading?${p.toString()}`);
+            }}
+            className="h-11 rounded-xl bg-gradient-bronze text-accent-foreground shadow-bronze hover:opacity-90 font-semibold px-5"
+          >
+            {t("analyze.sources.analyzeOne")}
+            <ArrowRight className="h-4 w-4 ml-1.5" />
+          </Button>
+        </div>
+      </div>
+
       <div className="mt-6 grid lg:grid-cols-[260px_1fr] gap-6">
         {/* Source picker */}
         <aside>
@@ -213,7 +173,7 @@ export default function SourcesBrowser() {
             {t("analyze.sources.pickSource")}
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
-            {SOURCES.map((s) => (
+            {orderedSources.map((s) => (
               <button
                 key={s.id}
                 onClick={() => {
