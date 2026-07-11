@@ -67,6 +67,31 @@ export default function SettingsPage() {
         </div>
       </Section>
 
+      <Section title={t("settings.country") ?? "Country · Страна"} Icon={MapPin}>
+        <div className="rounded-2xl border border-border bg-card p-2 grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+          {COUNTRIES.map((c) => {
+            const active = c.code === country;
+            return (
+              <button
+                key={c.code}
+                onClick={() => { setCountry(c.code); setAgentCountry(c.code); }}
+                className={cn(
+                  "rounded-xl px-3 py-2.5 text-left transition-all flex items-center gap-2",
+                  active ? "bg-gradient-bronze text-accent-foreground shadow-bronze" : "hover:bg-secondary"
+                )}
+              >
+                <span className="text-lg leading-none">{c.flag}</span>
+                <span className="text-xs font-medium tracking-tight truncate">{c.label}</span>
+                {active && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground/80 leading-relaxed px-1">
+          {t("settings.countryHint") ?? "Определяет, какие площадки (Zillow, Bayut, myhome.ge и т.д.) и локальные листинги ИИ будет использовать по умолчанию."}
+        </p>
+      </Section>
+
       <Section title={t("settings.privacy")} Icon={Shield}>
         <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
           Your data stays on your device by default. Sign in to sync across devices and enable alerts.
