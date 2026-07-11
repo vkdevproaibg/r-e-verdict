@@ -52,6 +52,9 @@ export default function GatherContextPage() {
       const lat = useGeo ? (latParam ? Number(latParam) : geo?.lat) : undefined;
       const lng = useGeo ? (lngParam ? Number(lngParam) : geo?.lng) : undefined;
       try {
+        const { getAgentCountry, COUNTRIES } = await import("@/lib/countries");
+        const agentCountry = getAgentCountry();
+        const countryMeta = COUNTRIES.find((c) => c.code === agentCountry);
         const { data, error } = await db.functions.invoke("analyze", {
           body: {
             kind,
@@ -60,6 +63,8 @@ export default function GatherContextPage() {
             lng,
             refine,
             purpose,
+            agent_country: agentCountry,
+            agent_country_label: countryMeta?.label,
             buyer_profile: profile.completedAt ? profile : undefined,
           },
         });
