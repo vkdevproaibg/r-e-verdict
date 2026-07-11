@@ -131,6 +131,41 @@ export default function SourcesBrowser() {
         </div>
       </div>
 
+      {/* Direct listing URL — same entry point, no need for a separate card on Analyze hub */}
+      <div className="mt-6 rounded-2xl border border-accent/30 ring-1 ring-accent/10 bg-gradient-to-br from-card to-accent/[0.04] p-4">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+          <Link2 className="h-3.5 w-3.5 text-accent" />
+          {t("analyze.sources.urlTitle")}
+        </div>
+        <div className="mt-2 text-sm text-muted-foreground leading-snug">
+          {t("analyze.sources.urlSub")}
+        </div>
+        <div className="mt-3 flex flex-col sm:flex-row gap-2">
+          <Input
+            value={manualUrl}
+            onChange={(e) => setManualUrl(e.target.value)}
+            placeholder="https://www.zillow.com/homedetails/..."
+            className="h-11 rounded-xl flex-1"
+          />
+          <Button
+            onClick={() => {
+              const q = manualUrl.trim();
+              if (!q) { toast.info(t("analyze.sources.urlEmpty")); return; }
+              const p = new URLSearchParams();
+              p.set("kind", "url");
+              p.set("q", q);
+              p.set("purpose", purpose);
+              if (area.trim()) p.set("area", area.trim());
+              navigate(`/app/analyze/loading?${p.toString()}`);
+            }}
+            className="h-11 rounded-xl bg-gradient-bronze text-accent-foreground shadow-bronze hover:opacity-90 font-semibold px-5"
+          >
+            {t("analyze.sources.analyzeOne")}
+            <ArrowRight className="h-4 w-4 ml-1.5" />
+          </Button>
+        </div>
+      </div>
+
       <div className="mt-6 grid lg:grid-cols-[260px_1fr] gap-6">
         {/* Source picker */}
         <aside>
