@@ -130,7 +130,7 @@ export default function SourcesBrowser() {
             {t("analyze.sources.pickSource")}
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
-            {SOURCES.map((s) => (
+            {orderedSources.map((s) => (
               <button
                 key={s.id}
                 onClick={() => {
