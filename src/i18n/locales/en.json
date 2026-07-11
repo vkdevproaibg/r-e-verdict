@@ -165,22 +165,26 @@
       "voice": { "title": "Voice", "desc": "Describe out loud" },
       "manual": { "title": "Manual entry", "desc": "Address, price, key facts" },
       "document": { "title": "Upload documents", "desc": "Deep dive on contracts & disclosures" },
-      "sources": { "title": "Browse from sources", "desc": "Zillow, Redfin, Bayut and more — pick listings straight from the feed" }
+      "sources": { "title": "From sources — Zillow, Redfin, Bayut & local portals", "desc": "Pick a listing from the feed or paste a listing URL. Portals adapt to the agent's country." }
     },
     "start": "Start analysis",
     "sources": {
       "title": "Property sources",
-      "sub": "Pick a listing straight from popular portals and agency feeds. One to analyze, two to compare.",
+      "sub": "Pick a listing from popular portals or paste a listing URL. One to analyze, two to compare.",
       "pickSource": "Source",
       "openOriginal": "Open original",
       "selectedOne": "1 listing selected",
       "selectedTwo": "2 listings selected",
-      "analyzeOne": "Analyze this listing",
+      "analyzeOne": "Analyze",
       "compareTwo": "Compare these listings",
       "limit": "Pick at most 2 listings",
       "comingSoonHint": "Sites block in-app embedding, so the original opens in a new tab. Here is a curated feed you can launch analysis from.",
       "feedTitle": "Curated feed for analysis",
-      "tapToSelect": "Tap a card to select"
+      "tapToSelect": "Tap a card to select",
+      "changeCountry": "Country · change in settings",
+      "urlTitle": "Paste a listing URL",
+      "urlSub": "Drop a link from Zillow, Bayut, Rightmove, myhome.ge and others — the AI pulls the data and runs the analysis.",
+      "urlEmpty": "Paste a listing URL"
     }
   },
   "gather": {
