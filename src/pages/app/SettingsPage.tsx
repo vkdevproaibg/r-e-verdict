@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Globe, Moon, Sun, Monitor, Shield, Plug } from "lucide-react";
+import { Check, Globe, Moon, Sun, Monitor, Shield, Plug, MapPin } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { SUPPORTED_LANGS, FULLY_LOCALIZED } from "@/i18n";
 import { cn } from "@/lib/utils";
+import { COUNTRIES, getAgentCountry, setAgentCountry, type CountryCode } from "@/lib/countries";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
+  const [country, setCountry] = useState<CountryCode>(getAgentCountry());
 
   return (
     <div className="px-5 lg:px-8 py-8 lg:py-12 max-w-3xl mx-auto space-y-8">
