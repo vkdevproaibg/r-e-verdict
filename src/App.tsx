@@ -7,11 +7,14 @@ import { AppProvider } from "@/state/AppContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { RoleProvider } from "@/state/RoleContext";
 import { BuyerProfileProvider } from "@/state/BuyerProfileContext";
+import { SessionProvider } from "@/state/SessionContext";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import AuthCallback from "./pages/auth/AuthCallback";
 import SharePage from "./pages/SharePage";
+import AddObjectPage from "./pages/agent/AddObject";
 
 import Splash from "./pages/onboarding/Splash";
 import Welcome from "./pages/onboarding/Welcome";
