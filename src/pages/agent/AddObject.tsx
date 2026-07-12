@@ -113,7 +113,7 @@ export default function AddObjectPage() {
         Math.random().toString(36).slice(2, 7);
       const { data, error } = await supabase
         .from("properties")
-        .insert({
+        .insert([{
           agent_id: agentId,
           title: d.title.trim(),
           address: d.address.trim(),
@@ -133,7 +133,7 @@ export default function AddObjectPage() {
           is_public: true,
           object_status: "active",
           source_type: "manual",
-        })
+        }])
         .select("id")
         .single();
       if (error) throw error;
