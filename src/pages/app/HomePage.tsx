@@ -204,9 +204,9 @@ export default function HomePage() {
                 variant="outline"
                 className="w-full h-11 rounded-2xl border-border bg-background/40 text-[14px] font-medium"
               >
-                <Link to="/app/library">
+                <Link to={role === "agent" ? "/app/add-object" : "/app/library"}>
                   <FolderOpen className="h-4 w-4 mr-2" />
-                  Open library
+                  {role === "agent" ? "Add object" : "Open library"}
                 </Link>
               </Button>
             </div>

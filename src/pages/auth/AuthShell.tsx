@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,8 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import heroInterior from "@/assets/hero-interior.jpg";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 
 export function AuthShell({
   mode,
@@ -19,18 +22,64 @@ export function AuthShell({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info(t("auth.comingSoon"));
-    onSubmit();
+    if (busy) return;
+    setBusy(true);
+    try {
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            data: { full_name: name || undefined },
+          },
+        });
+        if (error) throw error;
+        toast.success("Check your email to confirm sign-up.");
+        onSubmit();
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Welcome back");
+        onSubmit();
+      }
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      sessionStorage.setItem("propa_post_login", "/app");
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth/callback`,
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+      // Popup flow: session set by helper
+      onSubmit();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const goGuest = () => navigate("/app/analyze");
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
-      {/* Left form */}
       <div className="flex flex-col">
         <div className="flex items-center justify-between p-5 lg:p-8">
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -58,7 +107,8 @@ export function AuthShell({
             </p>
 
             <Button
-              onClick={() => toast.info(t("auth.comingSoon"))}
+              onClick={handleGoogle}
+              disabled={busy}
               variant="outline"
               className="w-full h-11 rounded-xl mt-6 font-medium"
             >
@@ -80,35 +130,32 @@ export function AuthShell({
                   <Label htmlFor="name" className="text-xs uppercase tracking-wider text-muted-foreground">
                     {t("auth.name")}
                   </Label>
-                  <Input id="name" type="text" required className="h-11 rounded-xl" />
+                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} type="text" className="h-11 rounded-xl" />
                 </div>
               )}
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground">
                   {t("auth.email")}
                 </Label>
-                <Input id="email" type="email" required autoComplete="email" className="h-11 rounded-xl" />
+                <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required autoComplete="email" className="h-11 rounded-xl" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="text-xs uppercase tracking-wider text-muted-foreground">
                   {t("auth.password")}
                 </Label>
-                <Input id="password" type="password" required minLength={6} autoComplete={mode === "signin" ? "current-password" : "new-password"} className="h-11 rounded-xl" />
+                <Input id="password" value={password} onChange={(e) => setPassword(e.target.value)} type="password" required minLength={6} autoComplete={mode === "signin" ? "current-password" : "new-password"} className="h-11 rounded-xl" />
               </div>
               <Button
                 type="submit"
+                disabled={busy}
                 className="w-full h-11 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium mt-2"
               >
-                {t(mode === "signin" ? "nav.signIn" : "nav.signUp")}
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t(mode === "signin" ? "nav.signIn" : "nav.signUp")}
               </Button>
             </form>
 
             <div className="mt-6 pt-6 border-t border-border text-center">
-              <Button
-                onClick={goGuest}
-                variant="ghost"
-                className="text-sm font-medium hover:bg-secondary"
-              >
+              <Button onClick={goGuest} variant="ghost" className="text-sm font-medium hover:bg-secondary">
                 {t("auth.guestCta")} →
               </Button>
               <p className="mt-1.5 text-[11px] text-muted-foreground">
@@ -129,13 +176,8 @@ export function AuthShell({
         </motion.div>
       </div>
 
-      {/* Right visual */}
       <div className="hidden lg:block relative">
-        <img
-          src={heroInterior}
-          alt="Premium real estate"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+        <img src={heroInterior} alt="Premium real estate" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-tr from-background/60 via-background/10 to-transparent" />
         <div className="absolute bottom-10 left-10 right-10 max-w-md">
           <div className="rounded-3xl bg-card/85 backdrop-blur-xl border border-border p-6 shadow-elevated">
@@ -146,9 +188,7 @@ export function AuthShell({
             <div className="mt-2 text-lg font-semibold tracking-tight leading-tight">
               "Saved me from a bad deal in three minutes."
             </div>
-            <div className="mt-3 text-xs text-muted-foreground">
-              — Sample agent testimonial
-            </div>
+            <div className="mt-3 text-xs text-muted-foreground">— Sample agent testimonial</div>
           </div>
         </div>
       </div>

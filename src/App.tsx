@@ -7,11 +7,14 @@ import { AppProvider } from "@/state/AppContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { RoleProvider } from "@/state/RoleContext";
 import { BuyerProfileProvider } from "@/state/BuyerProfileContext";
+import { SessionProvider } from "@/state/SessionContext";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import AuthCallback from "./pages/auth/AuthCallback";
 import SharePage from "./pages/SharePage";
+import AddObjectPage from "./pages/agent/AddObject";
 
 import Splash from "./pages/onboarding/Splash";
 import Welcome from "./pages/onboarding/Welcome";
@@ -51,12 +54,15 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <SessionProvider>
               <Routes>
                 {/* Public */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/share/:id" element={<SharePage />} />
+                <Route path="/app/add-object" element={<AddObjectPage />} />
 
                 {/* App shell — unified for buyer + agent */}
                 <Route path="/app" element={<AppShell />}>
@@ -102,6 +108,7 @@ const App = () => (
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </SessionProvider>
             </BrowserRouter>
           </TooltipProvider>
           </BuyerProfileProvider>
