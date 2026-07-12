@@ -128,7 +128,12 @@ export default function AddObjectPage() {
           bathrooms: d.bathrooms ? parseInt(d.bathrooms) : null,
           description: d.description.trim() || null,
           deal_type: d.deal_type,
-          property_type: d.property_type,
+          property_type:
+            d.property_type === "land"
+              ? "land"
+              : d.property_type === "commercial"
+              ? "micro_commercial"
+              : "residential",
           side: "own_listing",
           is_public: true,
           object_status: "active",
