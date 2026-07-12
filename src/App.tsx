@@ -54,12 +54,15 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <SessionProvider>
               <Routes>
                 {/* Public */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/share/:id" element={<SharePage />} />
+                <Route path="/app/add-object" element={<AddObjectPage />} />
 
                 {/* App shell — unified for buyer + agent */}
                 <Route path="/app" element={<AppShell />}>
