@@ -136,20 +136,9 @@ export default function SharePage() {
       toast.error("Укажите имя и контакт");
       return;
     }
-    // Persist a lead in DB when this share points to a real property
-    if (id && UUID_RE.test(id) && property) {
-      try {
-        await supabase.from("leads").insert({
-          property_id: id,
-          device_id: getDeviceId(),
-          contact_name: form.name.trim(),
-          contact: form.contact.trim(),
-          note: form.note.trim() || null,
-        } as never);
-      } catch (err) {
-        console.warn("lead insert failed", err);
-      }
-    }
+    // TODO: once Client Packs are created for public listings we'll persist to
+    // the `leads` table (requires client_pack_id + agent_id). For now, keep it
+    // client-side so the agent can pick it up.
     try {
       const leads = JSON.parse(localStorage.getItem("propaai_leads") ?? "[]");
       leads.push({ id, at: Date.now(), ...form });
