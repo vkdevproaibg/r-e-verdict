@@ -176,13 +176,7 @@ export default function SharePage() {
   if (!result) {
     return (
       <div className="min-h-screen grid place-items-center bg-background px-6 text-center">
-        <div>
-          <h1 className="text-xl font-semibold">Report not available</h1>
-          <p className="mt-2 text-sm text-muted-foreground">This share link has expired.</p>
-          <Link to="/" className="mt-4 inline-flex items-center gap-1 text-sm text-accent hover:underline">
-            Open Propa AI <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
+        <div className="text-sm text-muted-foreground">Loading…</div>
       </div>
     );
   }
