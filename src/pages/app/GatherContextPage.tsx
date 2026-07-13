@@ -16,6 +16,7 @@ export default function GatherContextPage() {
   const navigate = useNavigate();
   const { geo } = useApp();
   const { profile } = useBuyerProfile();
+  const { role } = useRole();
   const { t } = useTranslation();
   const [stage, setStage] = useState(0);
   const startedRef = useRef(false);
