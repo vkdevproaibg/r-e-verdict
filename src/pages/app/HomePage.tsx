@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -11,10 +11,13 @@ import {
   Link2,
   Home as HomeIcon,
   Loader2,
+  Building2,
 } from "lucide-react";
 import { useRole } from "@/state/RoleContext";
 import { useApp } from "@/state/AppContext";
 import { useAnalyses, type Verdict } from "@/hooks/useCloudData";
+import { useSession } from "@/state/SessionContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -23,6 +26,25 @@ import heroVilla from "@/assets/hero-villa.jpg";
 import libraryEmpty from "@/assets/library-empty.jpg";
 import { toast } from "sonner";
 import { FreshnessNudge } from "@/components/FreshnessNudge";
+
+interface AgentListing {
+  id: string;
+  title: string;
+  address: string | null;
+  city: string | null;
+  price: number;
+  currency: string;
+  object_status: string;
+  verdict: Verdict | null;
+  updated_at: string;
+}
+
+const statusMeta: Record<string, { ru: string; en: string; tone: string }> = {
+  active: { ru: "Активен", en: "Active", tone: "bg-verdict-green/15 text-verdict-green" },
+  reserved: { ru: "Резерв", en: "Reserved", tone: "bg-verdict-yellow/15 text-verdict-yellow" },
+  sold: { ru: "Продан", en: "Sold", tone: "bg-muted text-muted-foreground" },
+  archived: { ru: "Архив", en: "Archived", tone: "bg-muted text-muted-foreground" },
+};
 
 type Tab = "address" | "link" | "location";
 
@@ -40,6 +62,29 @@ export default function HomePage() {
   const navigate = useNavigate();
   const lang = i18n.language === "ru" ? "ru" : "en";
   const recent = analyses.slice(0, 4);
+  const { user, ensureAgent } = useSession();
+  const [listings, setListings] = useState<AgentListing[] | null>(null);
+
+  useEffect(() => {
+    if (role !== "agent" || !user) {
+      setListings(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const agentId = await ensureAgent();
+      if (!agentId || cancelled) return;
+      const { data } = await supabase
+        .from("properties")
+        .select("id,title,address,city,price,currency,object_status,verdict,updated_at")
+        .eq("agent_id", agentId)
+        .order("updated_at", { ascending: false })
+        .limit(8);
+      if (cancelled) return;
+      setListings((data as AgentListing[]) ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [role, user, ensureAgent]);
 
   const [tab, setTab] = useState<Tab>("address");
   const [value, setValue] = useState("");
@@ -218,6 +263,63 @@ export default function HomePage() {
 
       {/* Freshness nudge for agents */}
       {role === "agent" && <FreshnessNudge />}
+
+      {/* Agent Home v2 — My listings */}
+      {role === "agent" && user && listings && listings.length > 0 && (
+        <section className="mt-6 lg:mt-12">
+          <div className="flex items-baseline justify-between gap-2 mb-4">
+            <h2 className="font-serif-display text-2xl tracking-tight">
+              {lang === "ru" ? "Мои объекты" : "My listings"}
+            </h2>
+            <Link
+              to="/app/add-object"
+              className="text-xs font-medium text-accent hover:underline inline-flex items-center gap-1"
+            >
+              {lang === "ru" ? "Добавить" : "Add"} <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {listings.map((p, i) => {
+              const st = statusMeta[p.object_status] ?? statusMeta.active;
+              return (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                >
+                  <Link
+                    to={`/app/pack/${p.id}`}
+                    className="group block rounded-2xl border border-border bg-card p-4 shadow-soft hover:border-accent/40 hover:shadow-elevated transition-all"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-accent/10 grid place-items-center shrink-0">
+                        <Building2 className="h-4 w-4 text-accent" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium leading-tight truncate">{p.title}</div>
+                        <div className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground truncate">
+                          {p.address || p.city || "—"}
+                        </div>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className={cn("inline-flex items-center px-2 h-5 rounded-full text-[10px] font-medium uppercase tracking-wider", st.tone)}>
+                            {lang === "ru" ? st.ru : st.en}
+                          </span>
+                          <span className="text-[11px] tabular-nums text-muted-foreground">
+                            {Math.round(p.price).toLocaleString("en-US")} {p.currency}
+                          </span>
+                        </div>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
 
       {/* Library section */}
       <section className="mt-6 lg:mt-12">

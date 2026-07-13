@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Sparkles, Loader2, Check } from "lucide-react";
 import { db } from "@/integrations/supabase/db";
+import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/state/AppContext";
 import { useBuyerProfile } from "@/state/BuyerProfileContext";
+import { useRole } from "@/state/RoleContext";
 
 const STAGE_KEYS = ["reading", "signals", "comparing", "fairPrice", "risks", "verdict"] as const;
 
@@ -14,6 +16,7 @@ export default function GatherContextPage() {
   const navigate = useNavigate();
   const { geo } = useApp();
   const { profile } = useBuyerProfile();
+  const { role } = useRole();
   const { t } = useTranslation();
   const [stage, setStage] = useState(0);
   const startedRef = useRef(false);
@@ -51,6 +54,26 @@ export default function GatherContextPage() {
       const useGeo = kind === "location";
       const lat = useGeo ? (latParam ? Number(latParam) : geo?.lat) : undefined;
       const lng = useGeo ? (lngParam ? Number(lngParam) : geo?.lng) : undefined;
+
+      // Buyer proximity redirect: if the buyer lands within 50m of a public
+      // own_listing, take them straight to that agent's client-pack share view.
+      if (role === "buyer" && typeof lat === "number" && typeof lng === "number") {
+        try {
+          const { data: nearby } = await supabase.rpc("find_own_listing_nearby", {
+            _lat: lat,
+            _lng: lng,
+            _radius_m: 50,
+          });
+          const hit = Array.isArray(nearby) ? nearby[0] : null;
+          if (hit?.property_id) {
+            navigate(`/share/${hit.property_id}`, { replace: true });
+            return;
+          }
+        } catch (err) {
+          console.warn("nearby lookup failed", err);
+        }
+      }
+
       try {
         const { getAgentCountry, COUNTRIES } = await import("@/lib/countries");
         const agentCountry = getAgentCountry();
