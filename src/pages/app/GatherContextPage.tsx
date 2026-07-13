@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Sparkles, Loader2, Check } from "lucide-react";
 import { db } from "@/integrations/supabase/db";
+import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/state/AppContext";
 import { useBuyerProfile } from "@/state/BuyerProfileContext";
+import { useRole } from "@/state/RoleContext";
 
 const STAGE_KEYS = ["reading", "signals", "comparing", "fairPrice", "risks", "verdict"] as const;
 
