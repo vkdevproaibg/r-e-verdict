@@ -80,11 +80,50 @@ export default function ClientPackPage() {
     const raw = id ? sessionStorage.getItem(`propaai_result_${id}`) : null;
     const fb = sessionStorage.getItem("propaai_last_result");
     const data = raw ?? fb;
-    if (!data) {
+    if (data) {
+      setResult(JSON.parse(data));
+      return;
+    }
+    // Hydrate from DB when id is a property UUID (agent Add Object flow).
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!id || !UUID_RE.test(id)) {
       navigate("/app/analyze", { replace: true });
       return;
     }
-    setResult(JSON.parse(data));
+    (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data: prop } = await supabase
+        .from("properties")
+        .select("title,address,city,price,currency,area_sqm,bedrooms,bathrooms,description,verdict,score")
+        .eq("id", id)
+        .maybeSingle();
+      if (!prop) {
+        navigate("/app/analyze", { replace: true });
+        return;
+      }
+      const { data: an } = await supabase
+        .from("analyses")
+        .select("verdict,score,confidence,raw,reasons,red_flags,next_steps")
+        .eq("property_id", id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const rawAI = (an?.raw as Partial<AIResult> | null) ?? null;
+      setResult({
+        verdict: (an?.verdict as Verdict) ?? (prop.verdict as Verdict) ?? "yellow",
+        score: an?.score ?? prop.score ?? 70,
+        confidence: an?.confidence ?? 60,
+        headline_ru: rawAI?.headline_ru ?? prop.title,
+        headline_en: rawAI?.headline_en ?? prop.title,
+        reasons: (an?.reasons as AIResult["reasons"]) ?? rawAI?.reasons ?? [],
+        red_flags: (an?.red_flags as AIResult["red_flags"]) ?? rawAI?.red_flags ?? [],
+        next_steps: (an?.next_steps as AIResult["next_steps"]) ?? rawAI?.next_steps ?? [],
+        market: { currency: prop.currency },
+        price_proof: { asking_price: prop.price ?? undefined },
+        geo_address: prop.address ?? undefined,
+        ...(rawAI ?? {}),
+      } as AIResult);
+    })();
   }, [id, navigate]);
 
   const shareUrl = useMemo(() => `${window.location.origin}/share/${id ?? "preview"}`, [id]);
