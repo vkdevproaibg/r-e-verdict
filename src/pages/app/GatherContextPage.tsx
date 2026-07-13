@@ -74,7 +74,7 @@ export default function GatherContextPage() {
         }
       }
 
-
+      try {
         const { getAgentCountry, COUNTRIES } = await import("@/lib/countries");
         const agentCountry = getAgentCountry();
         const countryMeta = COUNTRIES.find((c) => c.code === agentCountry);
