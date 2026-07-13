@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -11,10 +11,13 @@ import {
   Link2,
   Home as HomeIcon,
   Loader2,
+  Building2,
 } from "lucide-react";
 import { useRole } from "@/state/RoleContext";
 import { useApp } from "@/state/AppContext";
 import { useAnalyses, type Verdict } from "@/hooks/useCloudData";
+import { useSession } from "@/state/SessionContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -23,6 +26,25 @@ import heroVilla from "@/assets/hero-villa.jpg";
 import libraryEmpty from "@/assets/library-empty.jpg";
 import { toast } from "sonner";
 import { FreshnessNudge } from "@/components/FreshnessNudge";
+
+interface AgentListing {
+  id: string;
+  title: string;
+  address: string | null;
+  city: string | null;
+  price: number;
+  currency: string;
+  object_status: string;
+  verdict: Verdict | null;
+  updated_at: string;
+}
+
+const statusMeta: Record<string, { ru: string; en: string; tone: string }> = {
+  active: { ru: "Активен", en: "Active", tone: "bg-verdict-green/15 text-verdict-green" },
+  reserved: { ru: "Резерв", en: "Reserved", tone: "bg-verdict-yellow/15 text-verdict-yellow" },
+  sold: { ru: "Продан", en: "Sold", tone: "bg-muted text-muted-foreground" },
+  archived: { ru: "Архив", en: "Archived", tone: "bg-muted text-muted-foreground" },
+};
 
 type Tab = "address" | "link" | "location";
 
