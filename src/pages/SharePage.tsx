@@ -47,28 +47,108 @@ function loadAgent(): AgentBrand {
   } catch { return {}; }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function SharePage() {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
   const [result, setResult] = useState<AIResult | null>(null);
+  const [property, setProperty] = useState<{
+    title: string;
+    address: string | null;
+    city: string | null;
+    price: number;
+    currency: string;
+    area_sqm: number | null;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    description: string | null;
+  } | null>(null);
+  const [dbAgent, setDbAgent] = useState<AgentBrand | null>(null);
   const [form, setForm] = useState({ name: "", contact: "", note: "" });
   const [sent, setSent] = useState(false);
+  const [notFound, setNotFound] = useState(false);
   const lang = i18n.language === "ru" ? "ru" : "en";
 
   useEffect(() => {
+    // Prefer sessionStorage payload (agent preview flow)
     const raw = id ? sessionStorage.getItem(`propaai_share_${id}`) ?? sessionStorage.getItem(`propaai_result_${id}`) : null;
     const fallback = sessionStorage.getItem("propaai_last_result");
-    const data = raw ?? fallback;
-    if (data) setResult(JSON.parse(data));
+    const cached = raw ?? fallback;
+    if (cached) {
+      setResult(JSON.parse(cached));
+      return;
+    }
+    // Otherwise try to hydrate from DB when id is a property UUID
+    if (!id || !UUID_RE.test(id)) {
+      setNotFound(true);
+      return;
+    }
+    (async () => {
+      const { data: prop } = await supabase
+        .from("properties")
+        .select("id,title,address,city,price,currency,area_sqm,bedrooms,bathrooms,description,agent_id,verdict,score,is_public")
+        .eq("id", id)
+        .eq("is_public", true)
+        .maybeSingle();
+      if (!prop) {
+        setNotFound(true);
+        return;
+      }
+      setProperty(prop);
+      if (prop.agent_id) {
+        const { data: a } = await supabase
+          .from("agents")
+          .select("name,company,contact_email,contact_phone")
+          .eq("id", prop.agent_id)
+          .maybeSingle();
+        if (a) setDbAgent({ name: a.name ?? undefined, company: a.company ?? undefined, email: a.contact_email ?? undefined, phone: a.contact_phone ?? undefined });
+      }
+      // Try the latest analysis attached to this property
+      const { data: an } = await supabase
+        .from("analyses")
+        .select("verdict,score,confidence,raw,reasons,red_flags,next_steps")
+        .eq("property_id", id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const rawAI = (an?.raw as Partial<AIResult> | null) ?? null;
+      setResult({
+        verdict: (an?.verdict as Verdict) ?? (prop.verdict as Verdict) ?? "yellow",
+        score: an?.score ?? prop.score ?? 70,
+        confidence: an?.confidence ?? 60,
+        headline_ru: rawAI?.headline_ru ?? prop.title,
+        headline_en: rawAI?.headline_en ?? prop.title,
+        reasons: (an?.reasons as AIResult["reasons"]) ?? rawAI?.reasons ?? [],
+        red_flags: (an?.red_flags as AIResult["red_flags"]) ?? rawAI?.red_flags ?? [],
+        next_steps: (an?.next_steps as AIResult["next_steps"]) ?? rawAI?.next_steps ?? [],
+        price_proof: rawAI?.price_proof,
+      });
+    })();
   }, [id]);
 
-  const agent = useMemo(loadAgent, []);
+  const localAgent = useMemo(loadAgent, []);
+  const agent = dbAgent ?? localAgent;
   const activityLabel = (agent.activeListings ?? 0) >= 3 ? "Активно ведёт объекты" : "Верифицированный агент";
 
-  const submitLead = () => {
+  const submitLead = async () => {
     if (!form.name.trim() || !form.contact.trim()) {
       toast.error("Укажите имя и контакт");
       return;
+    }
+    // Persist a lead in DB when this share points to a real property
+    if (id && UUID_RE.test(id) && property) {
+      try {
+        await supabase.from("leads").insert({
+          property_id: id,
+          device_id: getDeviceId(),
+          contact_name: form.name.trim(),
+          contact: form.contact.trim(),
+          note: form.note.trim() || null,
+        } as never);
+      } catch (err) {
+        console.warn("lead insert failed", err);
+      }
     }
     try {
       const leads = JSON.parse(localStorage.getItem("propaai_leads") ?? "[]");
@@ -78,6 +158,20 @@ export default function SharePage() {
     setSent(true);
     toast.success("Заявка отправлена агенту");
   };
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background px-6 text-center">
+        <div>
+          <h1 className="text-xl font-semibold">Report not available</h1>
+          <p className="mt-2 text-sm text-muted-foreground">This share link has expired.</p>
+          <Link to="/" className="mt-4 inline-flex items-center gap-1 text-sm text-accent hover:underline">
+            Open Propa AI <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!result) {
     return (
