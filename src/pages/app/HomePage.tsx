@@ -62,6 +62,29 @@ export default function HomePage() {
   const navigate = useNavigate();
   const lang = i18n.language === "ru" ? "ru" : "en";
   const recent = analyses.slice(0, 4);
+  const { user, ensureAgent } = useSession();
+  const [listings, setListings] = useState<AgentListing[] | null>(null);
+
+  useEffect(() => {
+    if (role !== "agent" || !user) {
+      setListings(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const agentId = await ensureAgent();
+      if (!agentId || cancelled) return;
+      const { data } = await supabase
+        .from("properties")
+        .select("id,title,address,city,price,currency,object_status,verdict,updated_at")
+        .eq("agent_id", agentId)
+        .order("updated_at", { ascending: false })
+        .limit(8);
+      if (cancelled) return;
+      setListings((data as AgentListing[]) ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [role, user, ensureAgent]);
 
   const [tab, setTab] = useState<Tab>("address");
   const [value, setValue] = useState("");
