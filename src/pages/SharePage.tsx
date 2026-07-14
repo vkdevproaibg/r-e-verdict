@@ -64,6 +64,7 @@ export default function SharePage() {
     description: string | null;
   } | null>(null);
   const [dbAgent, setDbAgent] = useState<AgentBrand | null>(null);
+  const [pack, setPack] = useState<{ id: string; agent_id: string; object_id: string } | null>(null);
   const [form, setForm] = useState({ name: "", contact: "", note: "" });
   const [sent, setSent] = useState(false);
   const [notFound, setNotFound] = useState(false);
