@@ -124,6 +124,16 @@ export default function SharePage() {
         next_steps: (an?.next_steps as AIResult["next_steps"]) ?? rawAI?.next_steps ?? [],
         price_proof: rawAI?.price_proof,
       });
+      // Fetch the public client pack for lead routing.
+      const { data: cp } = await supabase
+        .from("client_packs")
+        .select("id,agent_id,object_id")
+        .eq("object_id", id)
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cp) setPack(cp as { id: string; agent_id: string; object_id: string });
     })();
   }, [id]);
 
