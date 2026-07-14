@@ -182,7 +182,7 @@ export default function AddObjectPage() {
           const asJson = (v: unknown): Json => (v ?? []) as Json;
 
           await supabase.from("analyses").insert([{
-            agent_id: agentId,
+            device_id: agentId,
             property_id: propertyId,
             input_kind: "address",
             input_payload: {
