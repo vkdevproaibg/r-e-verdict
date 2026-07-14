@@ -64,6 +64,7 @@ export default function SharePage() {
     description: string | null;
   } | null>(null);
   const [dbAgent, setDbAgent] = useState<AgentBrand | null>(null);
+  const [pack, setPack] = useState<{ id: string; agent_id: string; object_id: string } | null>(null);
   const [form, setForm] = useState({ name: "", contact: "", note: "" });
   const [sent, setSent] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -123,6 +124,16 @@ export default function SharePage() {
         next_steps: (an?.next_steps as AIResult["next_steps"]) ?? rawAI?.next_steps ?? [],
         price_proof: rawAI?.price_proof,
       });
+      // Fetch the public client pack for lead routing.
+      const { data: cp } = await supabase
+        .from("client_packs")
+        .select("id,agent_id,object_id")
+        .eq("object_id", id)
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cp) setPack(cp as { id: string; agent_id: string; object_id: string });
     })();
   }, [id]);
 
@@ -135,16 +146,30 @@ export default function SharePage() {
       toast.error("Укажите имя и контакт");
       return;
     }
-    // TODO: once Client Packs are created for public listings we'll persist to
-    // the `leads` table (requires client_pack_id + agent_id). For now, keep it
-    // client-side so the agent can pick it up.
     try {
-      const leads = JSON.parse(localStorage.getItem("propaai_leads") ?? "[]");
-      leads.push({ id, at: Date.now(), ...form });
-      localStorage.setItem("propaai_leads", JSON.stringify(leads));
-    } catch { /* ignore */ }
-    setSent(true);
-    toast.success("Заявка отправлена агенту");
+      if (pack) {
+        const { error } = await supabase.from("leads").insert([{
+          client_pack_id: pack.id,
+          object_id: pack.object_id,
+          agent_id: pack.agent_id,
+          contact_name: form.name.trim(),
+          contact_phone_or_email: form.contact.trim(),
+          message: form.note.trim() || null,
+          is_internal: false,
+        }]);
+        if (error) throw error;
+      } else {
+        // Fallback: keep locally when there's no pack yet.
+        const leads = JSON.parse(localStorage.getItem("propaai_leads") ?? "[]");
+        leads.push({ id, at: Date.now(), ...form });
+        localStorage.setItem("propaai_leads", JSON.stringify(leads));
+      }
+      setSent(true);
+      toast.success("Заявка отправлена агенту");
+    } catch (err) {
+      console.error("lead submit failed", err);
+      toast.error("Не удалось отправить. Попробуйте ещё раз.");
+    }
   };
 
   if (notFound) {

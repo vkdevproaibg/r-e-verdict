@@ -30,7 +30,12 @@ export default function GatherContextPage() {
   const refineParam = params.get("refine");
   let refine: Record<string, string> = {};
   if (refineParam) {
-    try { refine = JSON.parse(decodeURIComponent(refineParam)); } catch { /* ignore */ }
+    try {
+      // Support both plain JSON and legacy double-encoded values.
+      refine = JSON.parse(refineParam);
+    } catch {
+      try { refine = JSON.parse(decodeURIComponent(refineParam)); } catch { /* ignore */ }
+    }
   }
   if (areaParam && !refine.area) refine.area = areaParam;
 

@@ -23,18 +23,20 @@ export default function RefinePage() {
   const q = params.get("q") ?? "";
 
   const proceed = (skip = false) => {
-    const refine = skip
-      ? undefined
-      : {
-          type: type ?? undefined,
-          area: area || undefined,
-          purpose: purpose ?? undefined,
-          price: price || undefined,
-        };
+    const refineObj: Record<string, string> = {};
+    if (!skip) {
+      if (type) refineObj.type = type;
+      if (area) refineObj.area = area;
+      if (purpose) refineObj.purpose = purpose;
+      if (price) refineObj.price = price;
+    }
     const url = new URLSearchParams();
     url.set("kind", kind);
     if (q) url.set("q", q);
-    if (refine) url.set("refine", encodeURIComponent(JSON.stringify(refine)));
+    if (purpose === "rent") url.set("purpose", "rent");
+    if (Object.keys(refineObj).length > 0) {
+      url.set("refine", JSON.stringify(refineObj));
+    }
     navigate(`/app/analyze/loading?${url.toString()}`);
   };
 
