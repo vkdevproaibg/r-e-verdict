@@ -111,6 +111,10 @@ export default function AddObjectPage() {
         (d.city.trim().toLowerCase().replace(/\s+/g, "-") || "unknown") +
         "-" +
         Math.random().toString(36).slice(2, 7);
+      const lat = parseFloat(d.lat);
+      const lng = parseFloat(d.lng);
+      const price = parseFloat(d.price);
+      const area = d.area_sqm ? parseFloat(d.area_sqm) : null;
       const { data, error } = await supabase
         .from("properties")
         .insert([{
@@ -119,11 +123,11 @@ export default function AddObjectPage() {
           address: d.address.trim(),
           city: d.city.trim() || null,
           city_slug: slug,
-          lat: parseFloat(d.lat),
-          lng: parseFloat(d.lng),
-          price: parseFloat(d.price),
+          lat,
+          lng,
+          price,
           currency: d.currency,
-          area_sqm: d.area_sqm ? parseFloat(d.area_sqm) : null,
+          area_sqm: area,
           bedrooms: d.bedrooms ? parseInt(d.bedrooms) : null,
           bathrooms: d.bathrooms ? parseInt(d.bathrooms) : null,
           description: d.description.trim() || null,
@@ -142,8 +146,83 @@ export default function AddObjectPage() {
         .select("id")
         .single();
       if (error) throw error;
+      const propertyId = data.id;
       toast.success(lang === "ru" ? "Объект добавлен" : "Object added");
-      navigate(`/app/pack/${data.id}`, { replace: true });
+
+      // Fire-and-forget: auto-analyze and create a shareable client pack.
+      // We navigate immediately; the pack page hydrates from DB once ready.
+      (async () => {
+        try {
+          const purpose = d.deal_type === "rent" ? "rent" : "buy";
+          const { data: ai, error: aiErr } = await supabase.functions.invoke("analyze", {
+            body: {
+              kind: "address",
+              query: [d.address.trim(), d.city.trim(), d.country.trim()].filter(Boolean).join(", "),
+              lat,
+              lng,
+              purpose,
+              agent_country: d.country.trim() || undefined,
+              refine: {
+                type: d.property_type,
+                area: area ?? undefined,
+                purpose,
+                price: price || undefined,
+              },
+            },
+          });
+          if (aiErr || !ai) return;
+          const raw = ai as Record<string, unknown>;
+          const verdict = (raw.verdict as string) ?? "yellow";
+          const score = (raw.score as number) ?? null;
+          const confidence = (raw.confidence as number) ?? null;
+
+          await supabase.from("analyses").insert([{
+            agent_id: agentId,
+            property_id: propertyId,
+            input_kind: "address",
+            input_payload: {
+              address: d.address,
+              city: d.city,
+              country: d.country,
+              deal_type: d.deal_type,
+            },
+            verdict,
+            score,
+            confidence,
+            reasons: (raw.reasons as unknown) ?? [],
+            red_flags: (raw.red_flags as unknown) ?? [],
+            next_steps: (raw.next_steps as unknown) ?? [],
+            raw,
+          }]);
+
+          await supabase.from("properties").update({
+            verdict,
+            score,
+          }).eq("id", propertyId);
+
+          const pack_slug = propertyId.replace(/-/g, "").slice(0, 12);
+          await supabase.from("client_packs").insert([{
+            object_id: propertyId,
+            agent_id: agentId,
+            share_slug: pack_slug,
+            is_public: true,
+            verdict_text: (raw.headline_ru as string) ?? (raw.headline_en as string) ?? null,
+            client_explanation: (raw.reasons as unknown) ?? [],
+            risks: (raw.red_flags as unknown) ?? [],
+            price_argument:
+              typeof raw.price_proof === "object" && raw.price_proof !== null
+                ? JSON.stringify(raw.price_proof)
+                : null,
+            next_step: Array.isArray(raw.next_steps) && raw.next_steps.length > 0
+              ? JSON.stringify(raw.next_steps[0])
+              : null,
+          }]);
+        } catch (e) {
+          console.warn("auto-analyze failed", e);
+        }
+      })();
+
+      navigate(`/app/pack/${propertyId}`, { replace: true });
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
