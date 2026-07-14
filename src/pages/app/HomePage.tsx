@@ -64,6 +64,8 @@ export default function HomePage() {
   const recent = analyses.slice(0, 4);
   const { user, ensureAgent } = useSession();
   const [listings, setListings] = useState<AgentListing[] | null>(null);
+  const [listingSearch, setListingSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "reserved" | "sold" | "archived">("all");
 
   useEffect(() => {
     if (role !== "agent" || !user) {
@@ -79,12 +81,25 @@ export default function HomePage() {
         .select("id,title,address,city,price,currency,object_status,verdict,updated_at")
         .eq("agent_id", agentId)
         .order("updated_at", { ascending: false })
-        .limit(8);
+        .limit(24);
       if (cancelled) return;
       setListings((data as AgentListing[]) ?? []);
     })();
     return () => { cancelled = true; };
   }, [role, user, ensureAgent]);
+
+  const filteredListings = (listings ?? []).filter((l) => {
+    if (statusFilter !== "all" && l.object_status !== statusFilter) return false;
+    if (listingSearch.trim()) {
+      const q = listingSearch.trim().toLowerCase();
+      return (
+        l.title.toLowerCase().includes(q) ||
+        (l.address ?? "").toLowerCase().includes(q) ||
+        (l.city ?? "").toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
 
   const [tab, setTab] = useState<Tab>("address");
   const [value, setValue] = useState("");
