@@ -146,16 +146,30 @@ export default function SharePage() {
       toast.error("Укажите имя и контакт");
       return;
     }
-    // TODO: once Client Packs are created for public listings we'll persist to
-    // the `leads` table (requires client_pack_id + agent_id). For now, keep it
-    // client-side so the agent can pick it up.
     try {
-      const leads = JSON.parse(localStorage.getItem("propaai_leads") ?? "[]");
-      leads.push({ id, at: Date.now(), ...form });
-      localStorage.setItem("propaai_leads", JSON.stringify(leads));
-    } catch { /* ignore */ }
-    setSent(true);
-    toast.success("Заявка отправлена агенту");
+      if (pack) {
+        const { error } = await supabase.from("leads").insert([{
+          client_pack_id: pack.id,
+          object_id: pack.object_id,
+          agent_id: pack.agent_id,
+          contact_name: form.name.trim(),
+          contact_phone_or_email: form.contact.trim(),
+          message: form.note.trim() || null,
+          is_internal: false,
+        }]);
+        if (error) throw error;
+      } else {
+        // Fallback: keep locally when there's no pack yet.
+        const leads = JSON.parse(localStorage.getItem("propaai_leads") ?? "[]");
+        leads.push({ id, at: Date.now(), ...form });
+        localStorage.setItem("propaai_leads", JSON.stringify(leads));
+      }
+      setSent(true);
+      toast.success("Заявка отправлена агенту");
+    } catch (err) {
+      console.error("lead submit failed", err);
+      toast.error("Не удалось отправить. Попробуйте ещё раз.");
+    }
   };
 
   if (notFound) {
