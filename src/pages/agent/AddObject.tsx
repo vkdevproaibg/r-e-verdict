@@ -172,9 +172,14 @@ export default function AddObjectPage() {
           });
           if (aiErr || !ai) return;
           const raw = ai as Record<string, unknown>;
-          const verdict = (raw.verdict as string) ?? "yellow";
+          const rawVerdict = raw.verdict as string | undefined;
+          const verdict: "green" | "yellow" | "red" =
+            rawVerdict === "green" || rawVerdict === "red" ? rawVerdict : "yellow";
           const score = (raw.score as number) ?? null;
           const confidence = (raw.confidence as number) ?? null;
+
+          type Json = import("@/integrations/supabase/types").Database["public"]["Tables"]["analyses"]["Insert"]["raw"];
+          const asJson = (v: unknown): Json => (v ?? []) as Json;
 
           await supabase.from("analyses").insert([{
             agent_id: agentId,
@@ -189,10 +194,10 @@ export default function AddObjectPage() {
             verdict,
             score,
             confidence,
-            reasons: (raw.reasons as unknown) ?? [],
-            red_flags: (raw.red_flags as unknown) ?? [],
-            next_steps: (raw.next_steps as unknown) ?? [],
-            raw,
+            reasons: asJson(raw.reasons),
+            red_flags: asJson(raw.red_flags),
+            next_steps: asJson(raw.next_steps),
+            raw: raw as Json,
           }]);
 
           await supabase.from("properties").update({
@@ -207,8 +212,8 @@ export default function AddObjectPage() {
             share_slug: pack_slug,
             is_public: true,
             verdict_text: (raw.headline_ru as string) ?? (raw.headline_en as string) ?? null,
-            client_explanation: (raw.reasons as unknown) ?? [],
-            risks: (raw.red_flags as unknown) ?? [],
+            client_explanation: asJson(raw.reasons),
+            risks: asJson(raw.red_flags),
             price_argument:
               typeof raw.price_proof === "object" && raw.price_proof !== null
                 ? JSON.stringify(raw.price_proof)
