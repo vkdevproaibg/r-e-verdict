@@ -293,45 +293,87 @@ export default function HomePage() {
               {lang === "ru" ? "Добавить" : "Add"} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {listings.map((p, i) => {
-              const st = statusMeta[p.object_status] ?? statusMeta.active;
-              return (
-                <motion.div
-                  key={p.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                >
-                  <Link
-                    to={`/app/pack/${p.id}`}
-                    className="group block rounded-2xl border border-border bg-card p-4 shadow-soft hover:border-accent/40 hover:shadow-elevated transition-all"
+
+          {/* Search + status filter */}
+          <div className="mb-4 flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                value={listingSearch}
+                onChange={(e) => setListingSearch(e.target.value)}
+                placeholder={lang === "ru" ? "Поиск по названию, адресу…" : "Search title, address…"}
+                className="w-full h-10 pl-9 pr-3 rounded-xl bg-card border border-border text-[13px] placeholder:text-muted-foreground focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15"
+              />
+            </div>
+            <div className="flex items-center gap-1 rounded-xl bg-secondary/60 p-1 overflow-x-auto">
+              {(["all", "active", "reserved", "sold", "archived"] as const).map((s) => {
+                const label =
+                  s === "all"
+                    ? lang === "ru" ? "Все" : "All"
+                    : lang === "ru" ? statusMeta[s].ru : statusMeta[s].en;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    className={cn(
+                      "px-3 h-8 rounded-lg text-[12px] font-medium whitespace-nowrap transition-all",
+                      statusFilter === s
+                        ? "bg-card text-accent shadow-soft"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-accent/10 grid place-items-center shrink-0">
-                        <Building2 className="h-4 w-4 text-accent" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium leading-tight truncate">{p.title}</div>
-                        <div className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground truncate">
-                          {p.address || p.city || "—"}
-                        </div>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className={cn("inline-flex items-center px-2 h-5 rounded-full text-[10px] font-medium uppercase tracking-wider", st.tone)}>
-                            {lang === "ru" ? st.ru : st.en}
-                          </span>
-                          <span className="text-[11px] tabular-nums text-muted-foreground">
-                            {Math.round(p.price).toLocaleString("en-US")} {p.currency}
-                          </span>
-                        </div>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {filteredListings.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-card/40 p-6 text-center text-sm text-muted-foreground">
+              {lang === "ru" ? "Ничего не найдено" : "No matches"}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {filteredListings.map((p, i) => {
+                const st = statusMeta[p.object_status] ?? statusMeta.active;
+                return (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                  >
+                    <Link
+                      to={`/app/pack/${p.id}`}
+                      className="group block rounded-2xl border border-border bg-card p-4 shadow-soft hover:border-accent/40 hover:shadow-elevated transition-all"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-accent/10 grid place-items-center shrink-0">
+                          <Building2 className="h-4 w-4 text-accent" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium leading-tight truncate">{p.title}</div>
+                          <div className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground truncate">
+                            {p.address || p.city || "—"}
+                          </div>
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className={cn("inline-flex items-center px-2 h-5 rounded-full text-[10px] font-medium uppercase tracking-wider", st.tone)}>
+                              {lang === "ru" ? st.ru : st.en}
+                            </span>
+                            <span className="text-[11px] tabular-nums text-muted-foreground">
+                              {Math.round(p.price).toLocaleString("en-US")} {p.currency}
+                            </span>
+                          </div>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
 
